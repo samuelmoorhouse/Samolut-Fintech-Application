@@ -10,10 +10,12 @@ namespace Samolut_Fintech_Application.Data
         //takes settings like the db name and passes it to the system
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
-             
 
         }
+        
+        //all my database tables
+        public DbSet<Customer> Customer { get; set; }
+        public DbSet<Account> Account { get; set; }
 
-        public DbSet<Customer> Customers { get; set; }
     }
 }
