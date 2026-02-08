@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36518.9 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samolut Fintech Application", "Samolut Fintech Application\Samolut Fintech Application.csproj", "{BE780193-0D09-4B18-8DBB-209314113179}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BE780193-0D09-4B18-8DBB-209314113179}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE780193-0D09-4B18-8DBB-209314113179}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE780193-0D09-4B18-8DBB-209314113179}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE780193-0D09-4B18-8DBB-209314113179}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8D96744A-72DE-45BE-9FFB-B80D6453D4A8}
+	EndGlobalSection
+EndGlobal
