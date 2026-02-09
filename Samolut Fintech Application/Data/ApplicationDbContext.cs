@@ -16,6 +16,8 @@ namespace Samolut_Fintech_Application.Data
         //all my database tables
         public DbSet<Customer> Customer { get; set; }
         public DbSet<Account> Account { get; set; }
+        public DbSet<AccountType> AccountType { get; set; }
+        
 
     }
 }
