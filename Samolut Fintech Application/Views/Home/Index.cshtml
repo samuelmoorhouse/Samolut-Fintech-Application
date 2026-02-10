@@ -1,8 +1,18 @@
-﻿@{
+﻿@Model Samolut_Fintech_Application.Models.Account
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+<div class="main">
+    <h1>Read Account</h1>
+    <table class="read-account">
+        <tr><th>ACCOUNT_ID</th><td>@Model.ACCOUNT_ID</td></tr>
+        
+    </table>
 </div>
