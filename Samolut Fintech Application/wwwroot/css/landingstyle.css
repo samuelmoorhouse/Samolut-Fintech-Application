@@ -12,10 +12,9 @@ body {
     margin: 0;
 }
 
-.individualNavContainer {
-}
 
 .nav {
+    margin-left: 12%;
     margin-top: 10px;
     width: 100%;
     height: 30px;
@@ -24,27 +23,8 @@ body {
 }
 
 .individualNavContainer {
-    margin: 10px;
+    
 }
-
-    .individualNavContainer:hover .dropdownContent {
-        position: absolute;
-        background-color: #bfbfbf;
-        border: none;
-        border-radius: 5px;
-        padding: 10px;
-    }
-
-.dropdownLinks {
-    text-decoration: none;
-    color: #ffffff;
-    padding: 10px;
-    transition-delay: 1ms;
-}
-
-    .dropdownLinks:hover {
-        color: #c3efff;
-    }
 
 
 .dropdownContent {
@@ -53,13 +33,13 @@ body {
 }
 
 .landingSpace1 {
-    background-color: rgb(220, 190, 240);
+    background-color: white;
     width: 50%;
     height: 100%;
 }
 
 .landingSpace2 {
-    background-color: rgb(151, 213, 140);
+    background-color: white;
     width: 50%;
     height: 100%;
     display: flex;
@@ -81,7 +61,6 @@ body {
 }
 
 .leftContainer {
-    width: %;
     margin-left: 25%;
     margin-top: 25%;
 }
@@ -96,4 +75,24 @@ body {
 
 .smallWriting {
     font-size: medium;
+}
+
+/*----------------------------------------------------------- home page nav bar styling*/
+
+a.mainLink {
+    text-decoration: none;
+    color: black;
+    padding: 10px;
+    transition-delay: 1ms;
+    font-weight: 600;
+}
+
+a.mainLink:hover {
+    color: rgb(69, 180, 69);
+}
+
+#SamolutHomeLogo {
+    color: rgb(69, 180, 69);
+    font-size: large;
+    font-weight: 700;
 }
