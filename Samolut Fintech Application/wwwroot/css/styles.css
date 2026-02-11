@@ -1,0 +1,17 @@
+body{
+    display: flex;
+    flex-direction: row;
+}
+.mainAppNavLeft {
+    width: 200px; /* Set a specific width */
+    height: 100vh; /* Full height of the screen */
+    position: fixed;
+}
+
+main{
+    width: 100%;
+}
+
+p{
+    font-size: xx-large;
+}

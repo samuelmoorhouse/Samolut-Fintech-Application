@@ -29,6 +29,10 @@ namespace Samolut_Fintech_Application.Controllers
         {
             return View();
         }
+        public IActionResult ApplicationHome()
+        {
+            return View();
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
