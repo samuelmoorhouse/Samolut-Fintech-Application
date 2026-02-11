@@ -7,7 +7,7 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
     public class Customer
     {
         [Key] //make c sharp know its the primary key
-        public int ID { get; set; }
+        public int CUSTOMER_ID { get; set; }
         [Required]
         public string FIRST_NAME { get; set; }
         public string? MIDDLE_NAME { get; set; } //use questionmakr so c sharp knows it can be empty

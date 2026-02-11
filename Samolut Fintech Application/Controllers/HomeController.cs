@@ -1,6 +1,8 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Samolut_Fintech_Application.Data;
 using Samolut_Fintech_Application.Models;
+using System.Diagnostics;
 
 namespace Samolut_Fintech_Application.Controllers
 {
@@ -28,5 +30,26 @@ namespace Samolut_Fintech_Application.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+    }
+
+    //so im making a new controller basically new folder for all my admin files. using the same code above but from my admin folder
+    public class AdminController : Controller
+    {
+        //this needs to be at the top of every file
+        private readonly ApplicationDbContext _context;
+
+        //setting up the contellers stuff
+        public AdminController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        //to view the customers
+        public async Task<IActionResult> ViewCustomers()
+        {
+            var customers = await _context.Customer.ToListAsync();
+            return View(customers);
+        }
+
     }
 }
