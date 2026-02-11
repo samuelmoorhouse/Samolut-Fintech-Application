@@ -1,10 +1,49 @@
-﻿@Model Samolut_Fintech_Application.Models.Account
-
-@{
-    ViewData["Title"] = "Home Page";
+﻿@{
+    Layout = "_homeLayout";
 }
+<body>
+<!-- nav just for this landing page -->
+<div class="nav">
+    <div class="individualNavContainer"></div>
+    <div class="dropDown">
+            <a class="mainLink" href="index.cshtml"><span id="SamolutHomeLogo">Samolut</span></a>
+    </div>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <div class="individualNavContainer"></div>
+    <div class="dropDown">
+        <a class="mainLink" href="about.cshtml">About & Documentation</a>
+    </div>
+
+    <div class="individualNavContainer"></div>
+    <div class="dropDown">
+        <a class="mainLink" href="Home/Login">Login</a>
+    </div>
+
+    <div class="individualNavContainer"></div>
+    <div class="dropDown">
+            <a class="mainLink" href="Home/Login">Sign Up</a>
+    </div>
 </div>
+
+
+<div class="containTwoSpaces">
+    <!-- left half of screeen -->
+    <div class="landingSpace1">
+
+        <div class="leftContainer">
+            <h1 class="bigWriting">The worldwide <span id="greenWords">payments</span> and <span id="greenWords">banking</span> project</h1>
+            <p class="smallWriting">This is a university project to develope a currency exchange and banking app with inspiration from the apps Revolut, AirWallex and Wise.</p>
+            <a class="mainLink" href="login.cshtml">Login</a>
+            <a class="mainLink" href="login.cshtml">Sign Up</a>
+        </div>
+
+    </div>
+
+
+    <!-- right half of screeen with the image of my project -->
+    <div class="landingSpace2">
+    <img src="images/phoneandtablet.png" alt="Phone and tablet showing my samolut app." id="img1">
+    </div>
+</div>
+
+</body>
