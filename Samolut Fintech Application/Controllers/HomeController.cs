@@ -33,6 +33,18 @@ namespace Samolut_Fintech_Application.Controllers
         {
             return View();
         }
+        public IActionResult LoginPassword()
+        {
+            return View();
+        }
+        public IActionResult SignUp()
+        {
+            return View();
+        }
+        public IActionResult About()
+        {
+            return View();
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

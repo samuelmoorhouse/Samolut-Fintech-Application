@@ -7,6 +7,29 @@
     <link rel="stylesheet" href="~/css/landingstyle.css" asp-append-version="true" />
 </head>
 <body>
+    <!--nav just for landing pages-->
+
+    <div class="nav">
+        <div class="individualNavContainer"></div>
+        <div class="dropDown">
+            <a class="mainLink" href="/Home/Index"><span id="SamolutHomeLogo">Samolut</span></a>
+        </div>
+
+        <div class="individualNavContainer"></div>
+        <div class="dropDown">
+            <a class="mainLink" href="/Home/About">About & Documentation</a>
+        </div>
+
+        <div class="individualNavContainer"></div>
+        <div class="dropDown">
+            <a class="mainLink" href="/Home/Login">Login</a>
+        </div>
+
+        <div class="individualNavContainer"></div>
+        <div class="dropDown">
+            <a class="mainLink" href="/Home/SignUp">Sign Up</a>
+        </div>
+    </div>
     <main role="main">
         @RenderBody()
     </main>
