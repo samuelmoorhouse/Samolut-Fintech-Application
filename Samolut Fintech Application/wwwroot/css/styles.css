@@ -1,25 +1,103 @@
-body{
+* {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+body {
     display: flex;
     flex-direction: row;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+/*added thios overflow as itr was giving scroll bars*/
+
+    background: #083512;
+    background: radial-gradient(at left top, #083512, #000000);
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
 }
 .mainAppNavLeft {
-    width: 200px; /* Set a specific width */
-    height: 100vh; /* Full height of the screen */
-    position: fixed;
+    width: 100px;
+    height: 100vh;
+    flex-shrink: 0;
 }
 
-main{
-    width: 100%;
+main {
+    flex: 1;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 p {
     font-size: xx-large;
 }
 
+.topDisplay {
+
+    width: 100%;
+    height: 40px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.mainAppSpace {
+    /*same css as the sign up page*/
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content:center;
+}
+.applicationBox {
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.1);
+    width: 95%;
+    height: 90%;
+    border-radius: 10px;
 
 
 
+}
+.nav{
+    margin-top: 40px;
+    padding-top: 5vh;
+    display: flex;
+    flex-direction: column;
+    align-items:center;
+    justify-content:center;
+}
 
+.individualNavContainer {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    width: 80%;
+    height: 40px;
+    margin: 10px;
 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.individualNavContainer:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+a.mainLink{
+    text-decoration: none;
+    color:white;
+}
+a.mainLink:hover {
+    text-decoration: none;
+    color: black;
+    transition-delay:1s;
+}
+h2{
+    color: white;
+    font-size:medium;
+                                                                                                                            
+}
 
 /*---------------------------------------------------------if someon eiujs on there phone it can use this css instead*/

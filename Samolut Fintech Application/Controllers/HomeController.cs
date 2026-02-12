@@ -46,6 +46,7 @@ namespace Samolut_Fintech_Application.Controllers
             return View();
         }
 
+       
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -71,6 +72,39 @@ namespace Samolut_Fintech_Application.Controllers
             var customers = await _context.Customer.ToListAsync();
             return View(customers);
         }
+
+    }
+
+    public class Application : Controller
+    {
+
+        private readonly ApplicationDbContext _context;
+
+
+        public Application(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public IActionResult ApplicationHome()
+        {
+            return View();
+        }
+
+        public IActionResult Account()
+        {
+            return View();
+        }
+
+        public IActionResult Payments()
+        {
+            return View();
+        }
+        public IActionResult Add()
+        {
+            return View();
+        }
+
 
     }
 }
