@@ -62,7 +62,6 @@ p {
 
 }
 .nav{
-    margin-top: 40px;
     padding-top: 5vh;
     display: flex;
     flex-direction: column;
@@ -76,28 +75,35 @@ p {
     width: 80%;
     height: 40px;
     margin: 10px;
-
     display: flex;
     align-items: center;
     justify-content: center;
+    transition-duration: 0.5s;
 }
 .individualNavContainer:hover {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.4);
+    transition-duration:0.5s;
 }
 
-a.mainLink{
+a.mainLink {
     text-decoration: none;
-    color:white;
+    color: white;
+
 }
 a.mainLink:hover {
     text-decoration: none;
-    color: black;
-    transition-delay:1s;
+
 }
 h2{
     color: white;
     font-size:medium;
                                                                                                                             
+}
+
+.LogoSamolut{
+    color: white;
+    font-size: medium;
+    font-weight: 700;
 }
 
 /*---------------------------------------------------------if someon eiujs on there phone it can use this css instead*/

@@ -9,14 +9,19 @@
                 
                 <form method="post">
                     <h2>Join Samolut!</h2>
-                    <label for="fname" class="formLabels">First Name:</label><br />
-                    <input type="text" id="fname" name="fname" placeholder="Enter your First Name" required><br />
-                    <label for="mname" class="formLabels">Middle Name: (Optional)</label><br />
-                    <input type="text" id="mname" name="mname" placeholder="Enter your Middle Name"><br />
-                    <label for="lname" class="formLabels">Last Name:</label><br />
-                    <input type="text" id="lname" name="lname" placeholder="Enter your Last Name" required><br />
+                    <div class="labelAndInput">
+                        <label for="fname" class="formLabels">First Name:</label><br />
+                        <input type="text" id="fname" name="fname" placeholder="Enter your First Name" required><br />
+                    </div>
+                    <div class="labelAndInput">
+                        <label for="mname" class="formLabels">Middle Name: (Optional)</label><br />
+                        <input type="text" id="mname" name="mname" placeholder="Enter your Middle Name"><br />
+                    </div>
                     
-
+                    <div class="labelAndInput">
+                        <label for="lname" class="formLabels">Last Name:</label><br />
+                        <input type="text" id="lname" name="lname" placeholder="Enter your Last Name" required><br />
+                    </div>
                 </form>
                 
             </div>
@@ -27,14 +32,19 @@
 
             <div class="signupRight">
                 <form method="post">
-                    <label for="phone2" class="formLabels">Phone Number:</label><br />
-                    <input type="text" id="phone2" name="phone2" placeholder="Enter your Phone Number" required><br />
-                    <label for="password2" class="formLabels">Password: </label><br />
-                    <!--csause i have password using the same css i jhsed passwiord 2 same for phone-->
-                    <input type="password2" id="password2" name="password2" placeholder="Enter your Password" required><br />
+                    <div class="labelAndInput">
+                        <label for="phone2" class="formLabels">Phone Number:</label><br />
+                        <input type="text" id="phone2" name="phone2" placeholder="Enter your Phone Number" required><br />
+                    </div>
                     
-
-                    <a class="Submit" href="/Application/ApplicationHome">Submit</a>
+                    <div class="labelAndInput">
+                        <label for="password2" class="formLabels">Password: </label><br />
+                        <!--csause i have password using the same css i jhsed passwiord 2 same for phone-->
+                        <input type="password2" id="password2" name="password2" placeholder="Enter your Password" required><br />
+                    </div>
+                    <div class="labelAndInput">
+                        <a class="Submit" href="/Application/ApplicationHome">Submit</a>
+                    </div>
                 </form>
             </div>
         </div>
