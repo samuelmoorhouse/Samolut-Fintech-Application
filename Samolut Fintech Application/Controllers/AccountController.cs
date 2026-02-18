@@ -36,7 +36,7 @@ namespace Samolut_Fintech_Application.Controllers
 
         //the post for form like i would in php
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken] //only using this on the posts
         public async Task<IActionResult> Login(string phonenumber, string password)
         {
             var user = await _context.Customer.FirstOrDefaultAsync(i => i.PHONE_NUMBER == phonenumber && i.PASSWORD == password);   //first or default is like fetch assoc in php and the u is c sharps like for i. Have to use async version.

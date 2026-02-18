@@ -76,8 +76,8 @@ namespace Samolut_Fintech_Application.Controllers
         }
 
 
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApplicationHomeAsync(int? selectedAccountId) //put selected account in here if i change it from a dropdown this knows and wuill display right transactions
+        
+        public async Task<IActionResult> ApplicationHome(int? selectedAccountId) //put selected account in here if i change it from a dropdown this knows and wuill display right transactions
          //have to user questionmark as it would error if empty on selectedaccounts
         {
 
@@ -102,6 +102,7 @@ namespace Samolut_Fintech_Application.Controllers
             {
                 selectedAccountId = accounts.First().ACCOUNT_ID;
             }
+            var selectedAccount = accounts.FirstOrDefault(a => a.ACCOUNT_ID == selectedAccountId); //get the selected account from its id
 
 
             //list of the selected accounts transactions stuff
