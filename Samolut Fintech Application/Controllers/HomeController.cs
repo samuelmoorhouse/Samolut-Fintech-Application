@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using Samolut_Fintech_Application.Data;
 using Samolut_Fintech_Application.Models;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Samolut_Fintech_Application.Controllers
 {
@@ -73,28 +75,55 @@ namespace Samolut_Fintech_Application.Controllers
             _context = context;
         }
 
-        public IActionResult ApplicationHome()
+
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApplicationHomeAsync(int? selectedAccountId) //put selected account in here if i change it from a dropdown this knows and wuill display right transactions
+         //have to user questionmark as it would error if empty on selectedaccounts
         {
+
             //checks session on every application file
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
                 return RedirectToAction("Login", "Account");
             }
+            
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            int? accountId = HttpContext.Session.GetInt32("UserId");
 
-            //so i can say hi on home
 
-            return View();
+            //list of accounts just for the customer
+            var accounts = await _context.Account
+                .Where(i => i.CUSTOMER_ID == userId)
+                .ToListAsync();
+
+
+
+            if (selectedAccountId == null && accounts.Any())
+            {
+                selectedAccountId = accounts.First().ACCOUNT_ID;
+            }
+
+
+            //list of the selected accounts transactions stuff
+            var transactions = await _context.Transaction
+                 .Where(i => i.SENDER_ACCOUNT_ID == selectedAccountId || i.RECEIVER_ACCOUNT_ID == selectedAccountId)
+                 .ToListAsync();
+
+            ViewBag.Transactions = transactions;
+            ViewBag.Accounts = accounts;
+
+            //i call the accounts below using Model and the transactioins using viewbag, so the main stuff goes model and others in viewbag. 
+            return View(selectedAccountId);
         }
 
-        public IActionResult Account()
+        public async Task<IActionResult> Account()
         {
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
                 return RedirectToAction("Login", "Account");
             }
-
-
             return View();
+
         }
 
         public IActionResult Payments()

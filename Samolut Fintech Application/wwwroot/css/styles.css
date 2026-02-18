@@ -61,12 +61,22 @@ p {
 
 
 }
-.nav{
+/*same css ive used form small boxes to make another just different sizes and margin so it fits in the other box*/
+.currentSelectedAccountBox {
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.1);
+    width: 100%;
+    height: 10%;
+    margin: 1%;
+    border-radius:10px;
+}
+
+.nav {
     padding-top: 5vh;
     display: flex;
     flex-direction: column;
-    align-items:center;
-    justify-content:center;
+    align-items: center;
+    justify-content: center;
 }
 
 .individualNavContainer {

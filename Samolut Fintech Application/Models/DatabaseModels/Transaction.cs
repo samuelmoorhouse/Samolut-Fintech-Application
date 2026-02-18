@@ -10,7 +10,7 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
         [Required]
         public int SENDER_ACCOUNT_ID { get; set; }
         [Required]
-        public string RECEIVER_ACCOUNT_ID { get; set; }
+        public int RECEIVER_ACCOUNT_ID { get; set; }
         [Required]
         public double AMOUNT { get; set; }
         [Required]

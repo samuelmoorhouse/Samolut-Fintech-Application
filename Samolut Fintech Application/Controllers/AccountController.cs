@@ -36,9 +36,10 @@ namespace Samolut_Fintech_Application.Controllers
 
         //the post for form like i would in php
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(string phonenumber, string password)
         {
-            var user = await _context.Customer.FirstOrDefaultAsync(u => u.PHONE_NUMBER.Trim() == phonenumber.Trim() && u.PASSWORD.Trim() == password.Trim());   //first or default is like fetch assoc in php and the u is c sharps like for i. Have to use async version.
+            var user = await _context.Customer.FirstOrDefaultAsync(i => i.PHONE_NUMBER == phonenumber && i.PASSWORD == password);   //first or default is like fetch assoc in php and the u is c sharps like for i. Have to use async version.
             
             if (user == null) { 
                 ViewBag.ErrorMessage = "Invalid phonenumber or password."; //this ViewBag is for how i would echo in php. ill style it later.

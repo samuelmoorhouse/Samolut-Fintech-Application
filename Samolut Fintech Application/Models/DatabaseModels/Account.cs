@@ -16,5 +16,6 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
         public double ACCOUNT_BALANCE { get; set; }
         [Required]
         public int ACCOUNT_TYPE_ID { get;set; }
+
     }
 }
