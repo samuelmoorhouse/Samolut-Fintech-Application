@@ -14,7 +14,7 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
         [Required]
         public string LAST_NAME { get; set; }
         [Required]
-        public int PHONE_NUMBER { get; set; }
+        public string PHONE_NUMBER { get; set; }
         [Required]
         public string PASSWORD { get; set; }
 

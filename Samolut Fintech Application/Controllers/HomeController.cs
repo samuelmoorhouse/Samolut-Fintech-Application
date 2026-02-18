@@ -20,33 +20,20 @@ namespace Samolut_Fintech_Application.Controllers
             return View();
         }
 
-        public IActionResult Login()
-        {
-            return View();
-        }
-
         public IActionResult Privacy()
         {
             return View();
         }
-        public IActionResult ApplicationHome()
-        {
-            return View();
-        }
-        public IActionResult LoginPassword()
-        {
-            return View();
-        }
-        public IActionResult SignUp()
-        {
-            return View();
-        }
+        
+        
+        
         public IActionResult About()
         {
             return View();
         }
 
-       
+        //login stuff
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -88,20 +75,46 @@ namespace Samolut_Fintech_Application.Controllers
 
         public IActionResult ApplicationHome()
         {
+            //checks session on every application file
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            //so i can say hi on home
+
             return View();
         }
 
         public IActionResult Account()
         {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+
             return View();
         }
 
         public IActionResult Payments()
         {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+
             return View();
         }
         public IActionResult Add()
         {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+
             return View();
         }
 
