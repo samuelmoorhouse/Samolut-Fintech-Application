@@ -68,8 +68,6 @@ namespace Samolut_Fintech_Application.Controllers
     {
 
         private readonly ApplicationDbContext _context;
-
-
         public Application(ApplicationDbContext context)
         {
             _context = context;
@@ -77,44 +75,56 @@ namespace Samolut_Fintech_Application.Controllers
 
 
         
-        public async Task<IActionResult> ApplicationHome(int? selectedAccountId) //put selected account in here if i change it from a dropdown this knows and wuill display right transactions
-         //have to user questionmark as it would error if empty on selectedaccounts
+        public async Task<IActionResult> ApplicationHome() 
         {
-
             //checks session on every application file
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+
+            //so my user id from the session
             int? userId = HttpContext.Session.GetInt32("UserId");
-            int? accountId = HttpContext.Session.GetInt32("UserId");
-
-
-            //list of accounts just for the customer
+            //get list of accounts for dropdown
             var accounts = await _context.Account
                 .Where(i => i.CUSTOMER_ID == userId)
                 .ToListAsync();
 
+            //because of the way i made my db to be 3rd normal form ill have to look up the ids for each currency accont against the table. 
+            var currencies = await _context.CurrentCurrency.ToListAsync();
+            ViewBag.Currencies = currencies;
+
+            return View(accounts);
 
 
-            if (selectedAccountId == null && accounts.Any())
-            {
-                selectedAccountId = accounts.First().ACCOUNT_ID;
-            }
-            var selectedAccount = accounts.FirstOrDefault(a => a.ACCOUNT_ID == selectedAccountId); //get the selected account from its id
+            
+            //int? accountId = HttpContext.Session.GetInt32("UserId");
 
 
-            //list of the selected accounts transactions stuff
-            var transactions = await _context.Transaction
-                 .Where(i => i.SENDER_ACCOUNT_ID == selectedAccountId || i.RECEIVER_ACCOUNT_ID == selectedAccountId)
-                 .ToListAsync();
+            ////list of accounts just for the customer
+            //var accounts = await _context.Account
+            //    .Where(i => i.CUSTOMER_ID == userId)
+            //    .ToListAsync();
 
-            ViewBag.Transactions = transactions;
-            ViewBag.Accounts = accounts;
 
-            //i call the accounts below using Model and the transactioins using viewbag, so the main stuff goes model and others in viewbag. 
-            return View(selectedAccountId);
+
+            //if (selectedAccountId == null && accounts.Any())
+            //{
+            //    selectedAccountId = accounts.First().ACCOUNT_ID;
+            //}
+            //var selectedAccount = accounts.FirstOrDefault(a => a.ACCOUNT_ID == selectedAccountId); //get the selected account from its id
+
+
+            ////list of the selected accounts transactions stuff
+            //var transactions = await _context.Transaction
+            //     .Where(i => i.SENDER_ACCOUNT_ID == selectedAccountId || i.RECEIVER_ACCOUNT_ID == selectedAccountId)
+            //     .ToListAsync();
+
+            //ViewBag.Transactions = transactions;
+            //ViewBag.Accounts = accounts;
+
+            ////i call the accounts below using Model and the transactioins using viewbag, so the main stuff goes model and others in viewbag. 
+            //return View(selectedAccountId);
         }
 
         public async Task<IActionResult> Account()

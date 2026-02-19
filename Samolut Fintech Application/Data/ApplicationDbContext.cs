@@ -17,7 +17,7 @@ namespace Samolut_Fintech_Application.Data
         public DbSet<Customer> Customer { get; set; }
         public DbSet<Account> Account { get; set; }
         public DbSet<AccountType> AccountType { get; set; }
-        public DbSet<CountryCurrency> CountryCurrency { get; set; }
+        public DbSet<CurrentCurrency> CurrentCurrency { get; set; }
         public DbSet<Transaction> Transaction { get; set; }
         public DbSet<Staff> Staff { get; set; }
         public DbSet<Role> Role { get; set; } 

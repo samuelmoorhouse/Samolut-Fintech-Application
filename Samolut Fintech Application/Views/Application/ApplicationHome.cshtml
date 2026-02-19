@@ -14,8 +14,30 @@
     <div class="mainAppSpace">
         <div class="applicationBox">
             <div class="currentSelectedAccountBox">
-                <h3 class="Balance">@Model.ACCOUNT_BALANCE</h3>
+                <select>
+                    @{
+                        var Name = "";
+
+                        if (Model != null)
+                        {
+                            foreach (var item in Model) //go through each Acccount
+                            {
+                                //t odispla ythem i need them to show there currency names, so find the one that matches ijn the currency viewbag i added
+                                foreach (var i in ViewBag.Currencies)
+                                {
+                                    if (item.COUNTRY_CURRENCY_ID == i.COUNTRY_CURRENCY_ID)
+                                    {
+                                        Name = i.COUNTRY_CURRENCY_NAME; ;
+                                    }
+                                }
+                                //the actual acdcount id (the item) is in the value and what i display is Name
+                                <option value="@item.ACCOUNT_ID">@Name</option>
+                            }
+                        }
+                    }
+                </select>
             </div>
         </div>
     </div>
 </body>
+
