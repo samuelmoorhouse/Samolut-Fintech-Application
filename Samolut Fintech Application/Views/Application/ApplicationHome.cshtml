@@ -13,31 +13,44 @@
 <body>
     <div class="mainAppSpace">
         <div class="applicationBox">
-            <div class="currentSelectedAccountBox">
-                <select>
-                    @{
-                        var Name = "";
+            <form asp-action="ApplicationHome" method="get">
+                <div class="currentSelectedAccountBox">
+                    @* select account id is  i know what account is selected so i can then display whatever else *@
+                   
+                    <select name="selectedAccountId" onchange="this.form.submit()" >
+                        <option>Select Account:</option>
+                        @{
+                            var Name = "";
 
-                        if (Model != null)
-                        {
-                            foreach (var item in Model) //go through each Acccount
+                            if (Model != null)
                             {
-                                //t odispla ythem i need them to show there currency names, so find the one that matches ijn the currency viewbag i added
-                                foreach (var i in ViewBag.Currencies)
+                                foreach (var item in Model) //go through each Acccount
                                 {
-                                    if (item.COUNTRY_CURRENCY_ID == i.COUNTRY_CURRENCY_ID)
+                                    //t odispla ythem i need them to show there currency names, so find the one that matches ijn the currency viewbag i added
+                                    foreach (var i in ViewBag.Currencies)
                                     {
-                                        Name = i.COUNTRY_CURRENCY_NAME; ;
+                                        if (item.COUNTRY_CURRENCY_ID == i.COUNTRY_CURRENCY_ID)
+                                        {
+                                       
+                                            Name = i.COUNTRY_CURRENCY_NAME;
+                                        }
                                     }
+                                    //the actual acdcount id (the item) is in the value and what i display is Name
+                                    <option value="@item.ACCOUNT_ID">@Name</option>
                                 }
-                                //the actual acdcount id (the item) is in the value and what i display is Name
-                                <option value="@item.ACCOUNT_ID">@Name</option>
                             }
                         }
+                    </select>
+                    @{
+                        //made the view bags so i could display the balances with the icon
+                        if (ViewBag.CurrentSelection != null)
+                        {
+                            <p>@ViewBag.currencyIcon @ViewBag.balance</p>
+                        }
                     }
-                </select>
-            </div>
+                </div>
+            </form>
         </div>
-    </div>
+    </div>ViewBag.CurrentSelection=-
 </body>
 

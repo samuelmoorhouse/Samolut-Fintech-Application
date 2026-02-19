@@ -9,5 +9,8 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
         public int COUNTRY_CURRENCY_ID { get; set; }
         [Required]
         public string COUNTRY_CURRENCY_NAME { get; set; }
+
+        [Required]
+        public string CURRENCY_ICON { get; set; }
     }
 }

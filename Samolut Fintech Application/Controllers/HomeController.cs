@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.UserSecrets;
+using MySqlConnector;
 using Samolut_Fintech_Application.Data;
 using Samolut_Fintech_Application.Models;
 using System.Diagnostics;
@@ -75,13 +77,15 @@ namespace Samolut_Fintech_Application.Controllers
 
 
         
-        public async Task<IActionResult> ApplicationHome() 
+        public async Task<IActionResult> ApplicationHome(int? selectedAccountId) //the selcted account id is from the name of select html statemt, so i know hat accounts in use and when
         {
             //checks session on every application file
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
                 return RedirectToAction("Login", "Account");
             }
+            
+            
 
             //so my user id from the session
             int? userId = HttpContext.Session.GetInt32("UserId");
@@ -90,41 +94,25 @@ namespace Samolut_Fintech_Application.Controllers
                 .Where(i => i.CUSTOMER_ID == userId)
                 .ToListAsync();
 
-            //because of the way i made my db to be 3rd normal form ill have to look up the ids for each currency accont against the table. 
+            //make list if Currencies as in my db i made it so the accounts like currency name like GBP was in a seperate table so its 3nf
             var currencies = await _context.CurrentCurrency.ToListAsync();
-            ViewBag.Currencies = currencies;
+            //find the balance that matches the selected account in the html select tag
+            var balance = accounts.Where(i=> i.ACCOUNT_ID == selectedAccountId).Select(i=> i.ACCOUNT_BALANCE).FirstOrDefault();
 
-            return View(accounts);
-
+            //need currency icon so it looks cool
+            //i need in currencies table  where currency id on the slected account and select icon.
+            var currencyId = accounts.Where(i => i.ACCOUNT_ID == selectedAccountId).Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefault();
+            var currencyIcon = currencies.Where(i => i.COUNTRY_CURRENCY_ID == currencyId).Select(i => i.CURRENCY_ICON).FirstOrDefault();
 
             
-            //int? accountId = HttpContext.Session.GetInt32("UserId");
 
 
-            ////list of accounts just for the customer
-            //var accounts = await _context.Account
-            //    .Where(i => i.CUSTOMER_ID == userId)
-            //    .ToListAsync();
+            ViewBag.Currencies = currencies;
+            ViewBag.balance = balance; //puts the id thats in the html select tag in viewbag so i can change balance and transactions and stuff
+            ViewBag.currencyIcon = currencyIcon;
+            ViewBag.selected = selectedAccountId;
 
-
-
-            //if (selectedAccountId == null && accounts.Any())
-            //{
-            //    selectedAccountId = accounts.First().ACCOUNT_ID;
-            //}
-            //var selectedAccount = accounts.FirstOrDefault(a => a.ACCOUNT_ID == selectedAccountId); //get the selected account from its id
-
-
-            ////list of the selected accounts transactions stuff
-            //var transactions = await _context.Transaction
-            //     .Where(i => i.SENDER_ACCOUNT_ID == selectedAccountId || i.RECEIVER_ACCOUNT_ID == selectedAccountId)
-            //     .ToListAsync();
-
-            //ViewBag.Transactions = transactions;
-            //ViewBag.Accounts = accounts;
-
-            ////i call the accounts below using Model and the transactioins using viewbag, so the main stuff goes model and others in viewbag. 
-            //return View(selectedAccountId);
+            return View(accounts);
         }
 
         public async Task<IActionResult> Account()
