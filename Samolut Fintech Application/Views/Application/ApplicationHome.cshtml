@@ -17,7 +17,7 @@
                 <div class="currentSelectedAccountBox">
                     @* select account id is  i know what account is selected so i can then display whatever else *@
                    
-                    <select name="selectedAccountId" onchange="this.form.submit()" >
+                    <select name="selectedAccountId" onchange="this.form.submit()">
                         <option>Select Account:</option>
                         @{
                             var Name = "";
@@ -36,19 +36,72 @@
                                         }
                                     }
                                     //the actual acdcount id (the item) is in the value and what i display is Name
-                                    <option value="@item.ACCOUNT_ID">@Name</option>
+                                    //idk why but  if i dont manually change it to the selectedname it wotn for some reason
+                                    if (item.ACCOUNT_ID == ViewBag.selected)
+                                    {
+                                        <option value="@item.ACCOUNT_ID" selected="@ViewBag.slectedName">@Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@item.ACCOUNT_ID">@Name</option>
+                                    }
+                                    
                                 }
                             }
                         }
                     </select>
+                    <div class="balanceDiv">
                     @{
                         //made the view bags so i could display the balances with the icon
-                        if (ViewBag.CurrentSelection != null)
+                            if (ViewBag.selected != null)
                         {
                             <p>@ViewBag.currencyIcon @ViewBag.balance</p>
                         }
                     }
+                    </div>
                 </div>
+
+
+                @* transactions table for selected account *@
+                <div class="transactionTableBox">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Sender</th>
+                                <th>Receiver</th>
+                                <th>@ViewBag.CurrencyIcon Amount</th>
+                                <th>Date</th>
+                                <th>Start Currency</th>
+                                <th>End Currency</th>
+                                <th>Exchange Rate</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                if (ViewBag.Transactions != null)
+                                {
+                                    foreach (var i in ViewBag.Transactions)
+                                    {
+                                        <tr>
+                                            <td>@i.TRANSACTION_ID</td>
+                                            <td>@i.SENDER_ACCOUNT_ID</td>
+                                            <td>@i.RECEIVER_ACCOUNT_ID</td>
+                                            <td>@i.AMOUNT</td>
+                                            <td>@i.DATE</td>
+                                            <td>@i.START_CURRENCY</td>
+                                            <td>@i.END_CURRENCY</td>
+                                            <td>@i.EXCHANGE_RATE</td>
+                                        </tr>
+                                    }
+                                }
+
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
             </form>
         </div>
     </div>ViewBag.CurrentSelection=-
