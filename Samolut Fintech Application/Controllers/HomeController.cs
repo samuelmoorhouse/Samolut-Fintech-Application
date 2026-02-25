@@ -66,6 +66,35 @@ namespace Samolut_Fintech_Application.Controllers
 
     }
 
+    public class Payments : Controller
+    {
+        public async Task<IActionResult> Paymentws()
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TransferExternal()
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+
+
+            return View();
+        }
+    }
     public class Application : Controller
     {
 
@@ -129,39 +158,25 @@ namespace Samolut_Fintech_Application.Controllers
             return View(accounts);
         }
 
-        public async Task<IActionResult> Account()
-        {
-            if (HttpContext.Session.GetInt32("UserId") == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
+        //public async Task<IActionResult> Account()
+        //{
+        //    if (HttpContext.Session.GetInt32("UserId") == null)
+        //    {
+        //        return RedirectToAction("Login", "Account");
+        //    }
 
-            int? usserId = HttpContext.Session.GetInt32("UserId");
+        //    int? usserId = HttpContext.Session.GetInt32("UserId");
 
-
-
-
-
-
-            return View();
-
-        }
-
-        public async Task<IActionResult> Payments()
-        {
-            if (HttpContext.Session.GetInt32("UserId") == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
+            
 
 
 
 
+        //    return View();
 
+        //}
 
-
-            return View();
-        }
+       
         public IActionResult Add()
         {
             if (HttpContext.Session.GetInt32("UserId") == null)

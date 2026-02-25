@@ -1,8 +1,8 @@
 ﻿@{
-	Layout = "_loginSignupLayout"; 
+    Layout = "_loginSignupLayout";
+    
 }
-
-
+@model Samolut_Fintech_Application.Models.LoginSignUpModels.LoginModel
 <body>
     
     <div class="loginSpace">
@@ -10,17 +10,27 @@
             <p class="welcomeText">Welcome back</p>
             <p class="welocomeText2">Enter the phone number associated with your Samolut account.</p>
             <form asp-action="Login" asp-controller="Account" method="post">
-                <input type="tel" name="phonenumber" placeholder="Enter your phone number" required>
-                <input type="password" name="password" placeholder="Enter your password" required>
-                <button type="submit" class="Submit" href="">Submit</button><br />
-                <! --   adding a error messge same way i would with php-->
+                @Html.AntiForgeryToken() @* for every post i do **@
+                <input type="tel" asp-for="PHONE_NUMBER" placeholder="Enter your phone number" required><br/>
+                <span asp-validation-for="PHONE_NUMBER" class="errorMessages"></span><br /> @* this is how i add the messages so i need to add to my models to make them more specific *@
+                <input type="password" asp-for="PASSWORD" placeholder="Enter your password" required><br />
+                <span asp-validation-for="PASSWORD" class="errorMessages"></span><br />
+                <button type="submit" class="Submit">Submit</button><br />
                 @{
                     if (ViewBag.ErrorMessage != null)
                     {
-                        <div class="errorMessage">@ViewBag.ErrorMessage</div>
+                        <span class="errorMessages">@ViewBag.ErrorMessage</span><br />
                     }
                 }
+                
             </form>
         </div>
     </div>
 </body>
+@* for all my asp validation stuff to actually show up in the form*@
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
