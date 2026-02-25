@@ -17,5 +17,7 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
         [Required]
         public int ACCOUNT_TYPE_ID { get;set; }
 
+        [ForeignKey("COUNTRY_CURRENCY_ID")]
+        public CurrentCurrency CurrencyForeignKey { get; set; }
     }
 }

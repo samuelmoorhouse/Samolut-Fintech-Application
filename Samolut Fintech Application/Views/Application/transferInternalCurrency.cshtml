@@ -1,0 +1,38 @@
+﻿@model IEnumerable<Samolut_Fintech_Application.Models.DatabaseModels.Account>
+<body>
+    <div class="topDisplay">
+        <h2>Samolut Payments</h2>
+    </div>
+
+    <div class="mainAppSpace">
+        <div class="applicationBox">
+            <div class="paymentTypeButtons">
+                <a asp-action="externalTransfer">Transfer To External Accounts (other peoples samolut accounts)</a>
+                <a asp-action="transferInternalBank">Transfer Money From Your Bank Accounts To Your Currency Accounts</a>
+                <a asp-action="transferInternalCurrency">Transfer Between Your Currency Accounts</a>
+            </div>
+            
+
+
+            <div class="TransferBox">
+                <form asp-action="transferInternalCurrency" method="post">
+                    @Html.AntiForgeryToken()
+                    <select>
+                        <option>Select Currency Account to Transfer From: </option>
+                        @{
+                            foreach(var i in Model)
+                                {
+                                    <option value="@i.ACCOUNT_ID">@i.CurrencyForeignKey.COUNTRY_CURRENCY_NAME</option>
+                            }
+                        }
+                        
+                    </select>
+                </form>
+
+            </div>
+            <div class="TransferBox">
+
+            </div>
+        </div>
+    </div>
+</body>

@@ -1,3 +1,4 @@
+using AspNetCoreGeneratedDocument;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
@@ -5,6 +6,7 @@ using Microsoft.Extensions.Configuration.UserSecrets;
 using MySqlConnector;
 using Samolut_Fintech_Application.Data;
 using Samolut_Fintech_Application.Models;
+using Samolut_Fintech_Application.Models.DatabaseModels;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -66,35 +68,6 @@ namespace Samolut_Fintech_Application.Controllers
 
     }
 
-    public class Payments : Controller
-    {
-        public async Task<IActionResult> Paymentws()
-        {
-            if (HttpContext.Session.GetInt32("UserId") == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> TransferExternal()
-        {
-            if (HttpContext.Session.GetInt32("UserId") == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            int? userId = HttpContext.Session.GetInt32("UserId");
-
-
-
-            return View();
-        }
-    }
     public class Application : Controller
     {
 
@@ -188,6 +161,59 @@ namespace Samolut_Fintech_Application.Controllers
             return View();
         }
 
+        
+        //all payments page stuff -------------------------------------------------
+        public async Task<IActionResult> Payments()
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            return View();
+        }
+
+        
+        public async Task<IActionResult> transferInternalCurrency()
+        {
+
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            var countryCurrencies = _context.CurrentCurrency.ToListAsync();
+
+            var accounts = _context.Account
+                .Include(i=>i.CurrencyForeignKey) //added a virtual foreign key in my db, so i can read off trhe currency names
+                .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+
+
+            return View(accounts);
+        }
+
+
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> externalTransfer()
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+
+
+
+
+
+            return View();
+        }
+        // -------------------------------------------------------------------------------
 
     }
 }
