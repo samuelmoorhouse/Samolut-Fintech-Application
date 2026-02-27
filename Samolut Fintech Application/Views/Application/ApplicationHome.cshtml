@@ -1,109 +1,81 @@
-﻿
+﻿@model IEnumerable<Samolut_Fintech_Application.Models.DatabaseModels.Account>
+
 <style>
-    #Home{
+    #Home {
         background-color: rgba(98, 204, 141, 0.5);
     }
 
-    #Home:hover {
+        #Home:hover {
             background-color: rgba(255, 255, 255, 0.5);
-            
-    }
+        }
 
 </style>
 <body>
     <div class="mainAppSpace">
         <div class="applicationBox">
-            <form asp-action="ApplicationHome" method="get">
-                <div class="currentSelectedAccountBox">
-                    @* select account id is  i know what account is selected so i can then display whatever else *@
-                   
-                    <select name="selectedAccountId" onchange="this.form.submit()">
-                        <option>Select Account:</option>
-                        @{
-                            var Name = "";
 
-                            if (Model != null)
+            <div class="currentSelectedAccountBox">
+                @* select account id is  i know what account is selected so i can then display whatever else *@
+                <div class="accountSelectedBox">
+                    <h1>@ViewBag.selectedAccountBalance</h1>
+                    <h2>@ViewBag.accountName</h2>
+                </div>
+                <form asp-action="ApplicationHome" method="get"> @*get not posttt*@
+                    
+                    @Html.AntiForgeryToken()
+                    <select name="ACCOUNT_ID" onchange="this.form.submit()">
+                        <option>Select Different Account:</option>
+                        @{
+                            foreach (var i in Model)
                             {
-                                foreach (var item in Model) //go through each Acccount
-                                {
-                                    //t odispla ythem i need them to show there currency names, so find the one that matches ijn the currency viewbag i added
-                                    foreach (var i in ViewBag.Currencies)
-                                    {
-                                        if (item.COUNTRY_CURRENCY_ID == i.COUNTRY_CURRENCY_ID)
-                                        {
-                                       
-                                            Name = i.COUNTRY_CURRENCY_NAME;
-                                        }
-                                    }
-                                    //the actual acdcount id (the item) is in the value and what i display is Name
-                                    //idk why but  if i dont manually change it to the selectedname it wotn for some reason
-                                    if (item.ACCOUNT_ID == ViewBag.selected)
-                                    {
-                                        <option value="@item.ACCOUNT_ID" selected="@ViewBag.slectedName">@Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@item.ACCOUNT_ID">@Name</option>
-                                    }
-                                    
-                                }
+                                <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME - @i.ACCOUNT_BALANCE</option>
+
                             }
                         }
                     </select>
-                    <div class="balanceDiv">
-                    @{
-                        //made the view bags so i could display the balances with the icon
-                            if (ViewBag.selected != null)
-                        {
-                            <p>@ViewBag.currencyIcon @ViewBag.balance</p>
-                        }
-                    }
-                    </div>
-                </div>
+                </form>
+            </div>
 
 
-                @* transactions table for selected account *@
-                <div class="transactionTableBox">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Transaction ID</th>
-                                <th>Sender</th>
-                                <th>Receiver</th>
-                                <th>@ViewBag.CurrencyIcon Amount</th>
-                                <th>Date</th>
-                                <th>Start Currency</th>
-                                <th>End Currency</th>
-                                <th>Exchange Rate</th>
+            @*for transactions to be displayed*@
+            <div class="transactionTableBox">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Sender</th>
+                            <th>Receiver</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Start Currency</th>
+                            <th>End Currency</th>
+                            <th>Exchange Rate</th>
 
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @{
-                                if (ViewBag.Transactions != null)
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            if (ViewBag.SelectedTransactions != null)
+                            {
+                                foreach (var i in ViewBag.SelectedTransactions)
                                 {
-                                    foreach (var i in ViewBag.Transactions)
-                                    {
-                                        <tr>
-                                            <td>@i.TRANSACTION_ID</td>
-                                            <td>@i.SENDER_ACCOUNT_ID</td>
-                                            <td>@i.RECEIVER_ACCOUNT_ID</td>
-                                            <td>@i.AMOUNT</td>
-                                            <td>@i.DATE</td>
-                                            <td>@i.START_CURRENCY</td>
-                                            <td>@i.END_CURRENCY</td>
-                                            <td>@i.EXCHANGE_RATE</td>
-                                        </tr>
-                                    }
+                                    <tr>
+                                        <td>@i.TRANSACTION_ID</td>
+                                        <td>@i.SENDER_ACCOUNT_ID</td>
+                                        <td>@i.RECEIVER_ACCOUNT_ID</td>
+                                        <td>@i.AMOUNT</td>
+                                        <td>@i.DATE</td>
+                                        <td>@i.START_CURRENCY</td>
+                                        <td>@i.END_CURRENCY</td>
+                                        <td>@i.EXCHANGE_RATE</td>
+                                    </tr>
                                 }
-
                             }
-                        </tbody>
-                    </table>
-                </div>
 
-            </form>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>ViewBag.CurrentSelection=-
+    </div>
 </body>
-

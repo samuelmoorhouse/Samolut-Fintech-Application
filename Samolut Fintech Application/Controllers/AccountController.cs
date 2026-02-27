@@ -40,7 +40,7 @@ namespace Samolut_Fintech_Application.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken] //only using this on the posts
 
-        public async Task<IActionResult> Login(LoginModel Data) //i use data as it uses customer table and whatever i posted is in Data to check against
+        public async Task<IActionResult> Login(LoginModel Data) //i use data as it uses customer table and whatever i posted is in Data to check against, and i used loginm modewl as thats what i want to check the data is valid against. like when i post my data in php
         {
             if (ModelState.IsValid)
             {
