@@ -17,7 +17,20 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
         [Required]
         public int ACCOUNT_TYPE_ID { get;set; }
 
+
+        //from my sql the keys what i need tro add 
+        //FOREIGN KEY(CUSTOMER_ID) REFERENCES Customer(CUSTOMER_ID),
+        //FOREIGN KEY(COUNTRY_CURRENCY_ID) REFERENCES CurrentCurrency(COUNTRY_CURRENCY_ID),
+        //FOREIGN KEY(ACCOUNT_TYPE_ID) REFERENCES AccountType(ACCOUNT_TYPE_ID)
+
         [ForeignKey("COUNTRY_CURRENCY_ID")]
-        public CurrentCurrency CurrencyForeignKey { get; set; }
+        public CurrentCurrency CurrencyIdForeignKey { get; set; }
+
+        [ForeignKey("CUSTOMER_ID")]
+        public Customer CustomerIdForeignKey { get; set; }
+
+        [ForeignKey("ACCOUNT_TYPE_ID")]
+        public AccountType AccountTypeIdForeignKey { get; set; }
+
     }
 }

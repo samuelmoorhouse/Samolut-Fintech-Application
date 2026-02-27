@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.Identity.Client;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace Samolut_Fintech_Application.Models.DatabaseModels
 {
@@ -22,6 +23,20 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
         [Required]
         //sends the dstabase the time it was done instead of the database choosing when the transaction happened, because i thought the c sharp was harder if i tried to ignore this.
         public DateTime TRANSACTION_TIME { get; set; } = DateTime.Now;
+
+
+
+        //my sql for the foriegn keys i need,
+        //  FOREIGN KEY(SENDER_ACCOUNT_ID) REFERENCES Account(ACCOUNT_ID),
+        ///FOREIGN KEY(RECEIVER_ACCOUNT_ID) REFERENCES Account(ACCOUNT_ID)
+
+        [ForeignKey("SENDER_ACCOUNT_ID")]
+        public Account SenderAccountIdForeignKey { get; set; }
+
+        [ForeignKey("RECEIVER_ACCOUNT_ID")]
+        public Account ReceiverAccountIdForeignKey { get; set; }
+
+
 
     }
 }

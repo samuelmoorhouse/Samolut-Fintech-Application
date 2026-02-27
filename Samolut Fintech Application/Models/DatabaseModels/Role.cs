@@ -11,5 +11,7 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
         [Required]
         public string ROLE_DESCRIPTION { get; set; }
 
+       
+
     }
 }

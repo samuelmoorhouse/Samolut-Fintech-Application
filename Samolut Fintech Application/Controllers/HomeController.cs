@@ -183,10 +183,10 @@ namespace Samolut_Fintech_Application.Controllers
             }
 
             int? userId = HttpContext.Session.GetInt32("UserId");
-            var countryCurrencies = _context.CurrentCurrency.ToListAsync();
+            var countryCurrencies = await _context.CurrentCurrency.ToListAsync();
 
-            var accounts = _context.Account
-                .Include(i=>i.CurrencyForeignKey) //added a virtual foreign key in my db, so i can read off trhe currency names
+            var accounts = await _context.Account
+                .Include(i=>i.CurrencyIdForeignKey) //added a  foreign key in my db, so i can read off trhe currency names as i made it to be 3nf so its in seperate table
                 .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
 
 
