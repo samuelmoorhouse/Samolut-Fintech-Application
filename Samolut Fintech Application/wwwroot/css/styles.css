@@ -43,7 +43,10 @@ p {
     justify-content:center;
 }
 
-
+.welcomeMessage{
+    font-size: medium;
+    color:white;
+}
 /* main app  and boxes for my trnansactionsa and stuff*/
 .mainAppSpace {
     /*same css as the sign up page*/
@@ -51,21 +54,30 @@ p {
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content:center;
-
+    justify-content: center;
     flex-direction: row;
 }
-
+/*had to add option first asd it was making the tezxt black but all the other options are against whjite so thats fine*/
+#options {
+    color: black;
+}
+.accountsHomeSelect {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 10px;
+    
+}
 .accountSelectedBox {
     background-color: rgba(255, 255, 255, 0.1);
     width: 20%;
     height: 80%;
     border-radius: 10px;
-
-    
     color: white;
 }
-
+.accountSelectionHome {
+    width: 30%;
+    margin: 5%;
+}
 .applicationBox {
     display: flex;
     background-color: rgba(255, 255, 255, 0.1);
@@ -78,11 +90,11 @@ p {
 .currentSelectedAccountBox {
     display: flex;
     background-color: rgba(255, 255, 255, 0.1);
-    width: 100%;
+    width: 98%;
     height: 10%;
     margin: 1%;
     border-radius: 10px;
-    justify-content: center;
+    align-items: center;
 }
 
 .nav {

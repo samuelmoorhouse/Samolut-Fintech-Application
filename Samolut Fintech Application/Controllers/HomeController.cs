@@ -113,12 +113,16 @@ namespace Samolut_Fintech_Application.Controllers
             int? userId = HttpContext.Session.GetInt32("UserId");
             var countryCurrencies = await _context.CurrentCurrency.ToListAsync();
 
+
             var accounts = await _context.Account
                 .Include(i=>i.CurrencyIdForeignKey) //added a  foreign key in my db, so i can read off trhe currency names as i made it to be 3nf so its in seperate table
                 .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
 
+            ViewBag.accounts = accounts;
 
-            return View(accounts);
+
+
+            return View();
         }
 
         
@@ -138,6 +142,9 @@ namespace Samolut_Fintech_Application.Controllers
                 .Include(i => i.CurrencyIdForeignKey) 
                 .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
 
+            var customerName = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i => i.FIRST_NAME).FirstOrDefaultAsync();
 
             //new code for the selected asccount passed in Data, above stuff is just my code for the dropdown again
 
@@ -150,7 +157,7 @@ namespace Samolut_Fintech_Application.Controllers
 
             ViewBag.selectedAccountBalance = selectedAccount?.ACCOUNT_BALANCE;
             ViewBag.accountName =  selectedAccount?.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME;
-
+            ViewBag.CustomerName = customerName;
 
 
             return View(accounts);

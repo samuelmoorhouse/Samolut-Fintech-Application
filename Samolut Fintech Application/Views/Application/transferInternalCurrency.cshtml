@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Samolut_Fintech_Application.Models.DatabaseModels.Account>
+﻿@model Samolut_Fintech_Application.Models.Transfers.InternalCurrencyModel
 <body>
     <div class="topDisplay">
         <h2>Samolut Payments</h2>
@@ -17,17 +17,41 @@
             <div class="TransferBox">
                 <form asp-action="transferInternalCurrency" method="post">
                     @Html.AntiForgeryToken()
-                    <select>
+
+                    @*what im sending it from*@
+                    <label for="selectAccountTransfer1">Account to Send Money</label>
+                    <select asp-for="SENDER_ACCOUNT_ID" id="SENDER_ACCOUNT_ID" name="SENDER_ACCOUNT_ID">
                         <option>Select Currency Account to Transfer From: </option>
                         @{
-                            foreach(var i in Model)
+                            foreach(var i in ViewBag.accounts)
                                 {
                                 <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME</option>
                             }
                         }
                         
                     </select>
+                    <span asp-validation-for="SENDER_ACCOUNT_ID" class="errorMessages"></span><br />
+
+
+                    @*receiviong account*@
+                    <label for="selectAccountTransfer2">Account to Receive Money</label>
+                    <select asp-for="RECEIVER_ACCOUNT_ID" id="RECEIVER_ACCOUNT_ID" name="RECEIVER_ACCOUNT_ID">
+                        <option>Select Currency Account to Transfer From: </option>
+                        @{
+                            foreach (var i in ViewBag.accounts)
+                            {
+                                <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME</option>
+                            }
+                        }
+
+                    </select>
+                    <span asp-validation-for="RECEIVER_ACCOUNT_ID" class="errorMessages"></span><br />
+                    <button class="SendMoneySubmit" type="submit">Send</button>
                 </form>
+                
+                  
+                    
+
 
             </div>
             <div class="TransferBox">
@@ -36,3 +60,9 @@
         </div>
     </div>
 </body>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

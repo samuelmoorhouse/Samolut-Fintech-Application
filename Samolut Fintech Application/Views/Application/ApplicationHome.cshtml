@@ -20,15 +20,15 @@
                     <h1>@ViewBag.selectedAccountBalance</h1>
                     <h2>@ViewBag.accountName</h2>
                 </div>
-                <form asp-action="ApplicationHome" method="get"> @*get not posttt*@
-                    
+                <form class="accountSelectionHome" asp-action="ApplicationHome" method="get"> @*get not posttt*@
+                    <h2 class="welcomeMessage">Welcome back @ViewBag.CustomerName!</h2>
                     @Html.AntiForgeryToken()
-                    <select name="ACCOUNT_ID" onchange="this.form.submit()">
-                        <option>Select Different Account:</option>
+                    <select class="accountsHomeSelect" name="ACCOUNT_ID" onchange="this.form.submit()">
+                        <option id="options">Select Currency Account:</option>
                         @{
                             foreach (var i in Model)
                             {
-                                <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME - @i.ACCOUNT_BALANCE</option>
+                                <option  id="options" value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME - @i.ACCOUNT_BALANCE</option>
 
                             }
                         }
@@ -36,51 +36,52 @@
                 </form>
             </div>
 
-
-            @*for transactions to be displayed only if somethings selecte, so chgecking it againsta a viewbag i used above*@
-            @{
-                if (ViewBag.accountName != null)
-                {
-                    <div class="transactionTableBox">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Transaction ID</th>
-                                    <th>Sender</th>
-                                    <th>Receiver</th>
-                                    <th>Amount</th>
-                                    <th>Date</th>
-                                    <th>Start Currency</th> 
-                                    <th>End Currency</th>
-                                    <th>Exchange Rate</th>
-
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @{
-                                    if (ViewBag.SelectedTransactions != null)
-                                    {
-                                        foreach (var i in ViewBag.SelectedTransactions)
+            <div class="HistoryBox">
+            <h3>History</h3>
+                @*for transactions to be displayed only if somethings selecte, so chgecking it againsta a viewbag i used above*@
+                @{
+                    if (ViewBag.accountName != null)
+                    {
+                        <div class="transactionTableBox">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Sender</th>
+                                        <th>Receiver</th>
+                                        
+                                        <th>Date</th>
+                                        <th>Start Currency</th> 
+                                        <th>End Currency</th>
+                                        <th>Exchange Rate</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        if (ViewBag.SelectedTransactions != null)
                                         {
-                                            <tr>
-                                                <td>@i.TRANSACTION_ID</td>
-                                                <td>@i.SENDER_ACCOUNT_ID</td>
-                                                <td>@i.RECEIVER_ACCOUNT_ID</td>
-                                                <td>@i.AMOUNT</td>
-                                                <td>@i.DATE</td>
-                                                <td>@i.START_CURRENCY</td>
-                                                <td>@i.END_CURRENCY</td>
-                                                <td>@i.EXCHANGE_RATE</td>
-                                            </tr>
+                                            foreach (var i in ViewBag.SelectedTransactions)
+                                            {
+                                                <tr>
+                                                    <td>@i.SENDER_ACCOUNT_ID</td>
+                                                    <td>@i.RECEIVER_ACCOUNT_ID</td>
+                                                    
+                                                    <td>@i.DATE</td>
+                                                    <td>@i.START_CURRENCY</td>
+                                                    <td>@i.END_CURRENCY</td>
+                                                    <td>@i.EXCHANGE_RATE</td>
+                                                    <td>@i.AMOUNT</td>
+                                                </tr>
+                                            }
                                         }
-                                    }
 
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
-                }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    }
+            </div>
                 
            
         </div>
