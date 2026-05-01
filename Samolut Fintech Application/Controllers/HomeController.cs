@@ -199,12 +199,12 @@ namespace Samolut_Fintech_Application.Controllers
                 // formula is sender gbp rate / receiver gbp rate
                 var SenderCurrencyID = await _context.Account
                     .Include(i => i.CurrencyIdForeignKey)
-                    .Where(i => i.CUSTOMER_ID == data.SENDER_ACCOUNT_ID)
+                    .Where(i => i.ACCOUNT_ID == data.SENDER_ACCOUNT_ID)
                     .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
                 
                 var ReciverCurrencyID= await _context.Account
                     .Include(i => i.CurrencyIdForeignKey)
-                    .Where(i => i.CUSTOMER_ID == data.RECEIVER_ACCOUNT_ID)
+                    .Where(i => i.ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID)
                     .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
 
                 double SenderGBPRate = 0;
@@ -238,12 +238,11 @@ namespace Samolut_Fintech_Application.Controllers
 
                 var ExchangeRate = SenderGBPRate / ReceiverGBPRate;
                 
-                double NewCurrencyAmount = data.AMOUNT * ExchangeRate;
+                double NewCurrencyAmount = Math.Round((data.AMOUNT * ExchangeRate),2); //so to 2dp
                 
                 
                 
-                
-                RedirectToAction("ConfirmInternalTransfer", new
+                return RedirectToAction("ConfirmInternalTransfer", new
                 {
                     senderID = data.SENDER_ACCOUNT_ID,
                     receiverID = data.RECEIVER_ACCOUNT_ID,
@@ -251,7 +250,7 @@ namespace Samolut_Fintech_Application.Controllers
                     currencyAmount = NewCurrencyAmount, //new amount just made
                     exchangeRate = ExchangeRate,
                     startcurrencyID = SenderCurrencyID,
-                    endcurrencyID = ReciverCurrencyID,
+                    endcurrencyID = ReciverCurrencyID
                     
                 });
                 
@@ -266,8 +265,9 @@ namespace Samolut_Fintech_Application.Controllers
             return View("TransferInternalCurrency", data);
 
         }
-
-        public IActionResult ConfirmInternalTransfer(double beforeAmount, int senderID, int receiverID, double exchangeRate, double currencyAmount, int startcurrencyID, int  endcurrencyID)
+        
+        
+        public async Task<IActionResult> ConfirmInternalTransfer(double beforeAmount, int senderID, int receiverID, double exchangeRate, double currencyAmount, int startcurrencyID, int  endcurrencyID)
         {
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
@@ -286,12 +286,50 @@ namespace Samolut_Fintech_Application.Controllers
                 END_CURRENCY = endcurrencyID
                 
             };
-
-            ViewBag.OrginalAmount = beforeAmount;
             
+            
+            //just things to make page look good, like getting the pound signs from db
+            ViewBag.SenderAccountSymbol = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.ACCOUNT_ID == senderID)
+                .Select(i => i.CurrencyIdForeignKey.CURRENCY_ICON).FirstOrDefaultAsync();
+            ViewBag.ReceiverAccountSymbol = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.ACCOUNT_ID == receiverID)
+                .Select(i => i.CurrencyIdForeignKey.CURRENCY_ICON).FirstOrDefaultAsync();
+            //and the names aswell cause why not
+            ViewBag.SenderAccountName = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.ACCOUNT_ID == senderID)
+                .Select(i => i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME).FirstOrDefaultAsync();
+            ViewBag.ReceiverAccountName = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.ACCOUNT_ID == receiverID)
+                .Select(i => i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME).FirstOrDefaultAsync();
+            
+            ViewBag.OrginalAmount = beforeAmount;
             
             return View(data);
         }
+        
+        //post to finally go through with transaction
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmInternalTransfer(InternalCurrencyModel data)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+                
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+            return View();
+
+        }
     }
+    
+    
+    
 }    
     
