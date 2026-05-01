@@ -5,20 +5,27 @@ namespace Samolut_Fintech_Application.Models.Transfers
 {
     public class InternalCurrencyModel
     {
+        
+        //need to add rules so that liekt e amoujnt sent cant be less than 0
+        //used this site to find all the attributes for validation https://learn.microsoft.com/en-us/aspnet/core/mvc/models/validation?view=aspnetcore-10.0
         [Key]
-        public int TRANSACTION_ID { get; set; }
+        public int? TRANSACTION_ID { get; set; }
         [Required]
         public int SENDER_ACCOUNT_ID { get; set; }
         [Required]
         public int RECEIVER_ACCOUNT_ID { get; set; }
         [Required]
+        //max like 1 million transfer
+        [Range(0,1000000)]
         public double AMOUNT { get; set; }
-        [Required]
-        public double EXCHANGE_RATE { get; set; }
-        [Required]
-        public string START_CURRENCY { get; set; }
-        [Required]
-        public string END_CURRENCY { get; set; }
+        
+        
+        //this stuff gets calculated so isnt required until its calculated. added ? so can be null
+        
+        public double? EXCHANGE_RATE { get; set; } 
+        public int? START_CURRENCY { get; set; }
+        public int? END_CURRENCY { get; set; }
+        
         [Required]
         public DateTime TRANSACTION_TIME { get; set; } = DateTime.Now;
 

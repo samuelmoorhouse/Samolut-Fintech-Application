@@ -8,7 +8,10 @@ using Samolut_Fintech_Application.Data;
 using Samolut_Fintech_Application.Models;
 using Samolut_Fintech_Application.Models.DatabaseModels;
 using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
+using Samolut_Fintech_Application.Models.Transfers;
 
 namespace Samolut_Fintech_Application.Controllers
 {
@@ -30,9 +33,9 @@ namespace Samolut_Fintech_Application.Controllers
         {
             return View();
         }
-        
-        
-        
+
+
+
         public IActionResult About()
         {
             return View();
@@ -72,12 +75,13 @@ namespace Samolut_Fintech_Application.Controllers
     {
 
         private readonly ApplicationDbContext _context;
+
         public Application(ApplicationDbContext context)
         {
             _context = context;
         }
 
-       
+
         public IActionResult Add()
         {
             if (HttpContext.Session.GetInt32("UserId") == null)
@@ -89,7 +93,7 @@ namespace Samolut_Fintech_Application.Controllers
             return View();
         }
 
-        
+
         //all payments page stuff -------------------------------------------------
         public async Task<IActionResult> Payments()
         {
@@ -101,33 +105,7 @@ namespace Samolut_Fintech_Application.Controllers
             return View();
         }
 
-        
-        public async Task<IActionResult> transferInternalCurrency()
-        {
-
-            if (HttpContext.Session.GetInt32("UserId") == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            var countryCurrencies = await _context.CurrentCurrency.ToListAsync();
-
-
-            var accounts = await _context.Account
-                .Include(i=>i.CurrencyIdForeignKey) //added a  foreign key in my db, so i can read off trhe currency names as i made it to be 3nf so its in seperate table
-                .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
-
-            ViewBag.accounts = accounts;
-
-
-
-            return View();
-        }
-
-        
-
-        public async Task<IActionResult> ApplicationHome(int ACCOUNT_ID)
+        public async Task<IActionResult> ApplicationHome(int accountId)
         {
 
             if (HttpContext.Session.GetInt32("UserId") == null)
@@ -139,7 +117,7 @@ namespace Samolut_Fintech_Application.Controllers
             var countryCurrencies = await _context.CurrentCurrency.ToListAsync();
 
             var accounts = await _context.Account
-                .Include(i => i.CurrencyIdForeignKey) 
+                .Include(i => i.CurrencyIdForeignKey)
                 .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
 
             var customerName = await _context.Customer
@@ -148,41 +126,172 @@ namespace Samolut_Fintech_Application.Controllers
 
             //new code for the selected asccount passed in Data, above stuff is just my code for the dropdown again
 
-            var SelectedID = ACCOUNT_ID;
-            var selectedAccount = await _context.Account.FirstOrDefaultAsync(i => i.ACCOUNT_ID == SelectedID);
+            var selectedId = accountId;
+            var selectedAccount = await _context.Account.FirstOrDefaultAsync(i => i.ACCOUNT_ID == selectedId);
             ViewBag.SelectedTransactions = await _context.Transaction
-                .Include(i => i.SenderAccountIdForeignKey) //include the foreign keys so i know the details of each accoujnt
+                .Include(i =>
+                    i.SenderAccountIdForeignKey) //include the foreign keys so i know the details of each accoujnt
                 .Include(i => i.ReceiverAccountIdForeignKey)
-                .Where(i => i.SENDER_ACCOUNT_ID == SelectedID || i.RECEIVER_ACCOUNT_ID == SelectedID).ToListAsync();
+                .Where(i => i.SENDER_ACCOUNT_ID == selectedId || i.RECEIVER_ACCOUNT_ID == selectedId).ToListAsync();
 
             ViewBag.selectedAccountBalance = selectedAccount?.ACCOUNT_BALANCE;
-            ViewBag.accountName =  selectedAccount?.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME;
+            ViewBag.accountName = selectedAccount?.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME;
             ViewBag.CustomerName = customerName;
 
 
             return View(accounts);
         }
 
+        public async Task<IActionResult> TransferInternalCurrency()
+        {
 
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            var countryCurrencies = await _context.CurrentCurrency.ToListAsync();
+
+
+            var accounts = await _context.Account
+                .Include(i =>
+                    i.CurrencyIdForeignKey) //added a  foreign key in my db, so i can read off trhe currency names as i made it to be 3nf so its in seperate table
+                .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+
+            ViewBag.accounts = accounts;
+            //post hasnt happened yet so make it false when page first loads
+            
+            return View();
+        }
+
+
+
+        
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> externalTransfer()
+        public async Task<IActionResult> CalculateInternalCurrency(InternalCurrencyModel data)
         {
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
                 return RedirectToAction("Login", "Account");
             }
+
             int? userId = HttpContext.Session.GetInt32("UserId");
 
+            if (ModelState.IsValid)
+            {
+                //so im gonna check if the accounts were the same first
+                if (data.SENDER_ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID)
+                {
+                    ViewBag.accounts = await _context.Account
+                        .Include(i => i.CurrencyIdForeignKey)
+                        .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                    ViewBag.ErrorMessage = "Cannot send money to the same account! Choose a different account to receive funds.";
+                    return View("TransferInternalCurrency", data);
+                }
+                
+                
+                
+                //calculate exchange rate, so get sender and receiver and calculate it against the uks one
+                //ill store all the rates to gbp
+                // formula is sender gbp rate / receiver gbp rate
+                var SenderCurrencyID = await _context.Account
+                    .Include(i => i.CurrencyIdForeignKey)
+                    .Where(i => i.CUSTOMER_ID == data.SENDER_ACCOUNT_ID)
+                    .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
+                
+                var ReciverCurrencyID= await _context.Account
+                    .Include(i => i.CurrencyIdForeignKey)
+                    .Where(i => i.CUSTOMER_ID == data.RECEIVER_ACCOUNT_ID)
+                    .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
 
+                double SenderGBPRate = 0;
+                double ReceiverGBPRate = 0;
+                //though id use switch as its less code for this
+                switch(SenderCurrencyID)
+                {
+                    case 1: //gbp so no convert needed
+                        SenderGBPRate = 1;
+                        break;
+                    case 2: //eur to gbp
+                        SenderGBPRate = 0.8624;
+                        break;
+                    case 3:
+                        SenderGBPRate = 0.0046;
+                        break;
+                }
 
+                switch (ReciverCurrencyID)
+                {
+                    case 1: //gbp so no convert needed
+                        ReceiverGBPRate = 1;
+                        break;
+                    case 2: //eur to gbp
+                        ReceiverGBPRate = 0.8624;
+                        break;
+                    case 3:
+                        ReceiverGBPRate = 0.0046;
+                        break;
+                }
 
+                var ExchangeRate = SenderGBPRate / ReceiverGBPRate;
+                
+                double NewCurrencyAmount = data.AMOUNT * ExchangeRate;
+                
+                
+                
+                
+                RedirectToAction("ConfirmInternalTransfer", new
+                {
+                    senderID = data.SENDER_ACCOUNT_ID,
+                    receiverID = data.RECEIVER_ACCOUNT_ID,
+                    beforeAmount = data.AMOUNT,
+                    currencyAmount = NewCurrencyAmount, //new amount just made
+                    exchangeRate = ExchangeRate,
+                    startcurrencyID = SenderCurrencyID,
+                    endcurrencyID = ReciverCurrencyID,
+                    
+                });
+                
+            }
 
+            //if not need to relaoad page with eveythign it had before
+            ViewBag.accounts = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+            //becuase my post is named differently to the file i have to tell it where to go back to
+            ViewBag.ErrorMessage = "Model Invalid";
+            return View("TransferInternalCurrency", data);
 
-            return View();
         }
-        // -------------------------------------------------------------------------------
 
+        public IActionResult ConfirmInternalTransfer(double beforeAmount, int senderID, int receiverID, double exchangeRate, double currencyAmount, int startcurrencyID, int  endcurrencyID)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+                
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            var data = new InternalCurrencyModel
+            {
+                SENDER_ACCOUNT_ID = senderID,
+                RECEIVER_ACCOUNT_ID = receiverID,
+                AMOUNT = currencyAmount,
+                EXCHANGE_RATE = exchangeRate,
+                START_CURRENCY = startcurrencyID,
+                END_CURRENCY = endcurrencyID
+                
+            };
+
+            ViewBag.OrginalAmount = beforeAmount;
+            
+            
+            return View(data);
+        }
     }
-}
+}    
+    
