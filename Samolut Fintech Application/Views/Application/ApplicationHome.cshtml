@@ -17,13 +17,13 @@
             <div class="currentSelectedAccountBox">
                 @* select account id is  i know what account is selected so i can then display whatever else *@
                 <div class="accountSelectedBox">
-                    <h1>@ViewBag.selectedAccountBalance</h1>
-                    <h2>@ViewBag.accountName</h2>
+                    <h1>@ViewBag.ACCOUNT_BALANCE</h1>
+                    <h2>@ViewBag.COUNTRY_CURRENCY_NAME</h2>
                 </div>
                 <form class="accountSelectionHome" asp-action="ApplicationHome" method="get"> @*get not posttt*@
                     <h2 class="welcomeMessage">Welcome back @ViewBag.CustomerName!</h2>
                     @Html.AntiForgeryToken()
-                    <select class="accountsHomeSelect" name="ACCOUNT_ID" onchange="this.form.submit()">
+                    <select class="accountsHomeSelect" name="AccountForm">
                         <option id="options">Select Currency Account:</option>
                         @{
                             foreach (var i in Model)
@@ -33,6 +33,7 @@
                             }
                         }
                     </select>
+                    <button type="submit">Change Account</button>
                 </form>
             </div>
 
@@ -40,7 +41,7 @@
             <h3>History</h3>
                 @*for transactions to be displayed only if somethings selecte, so chgecking it againsta a viewbag i used above*@
                 @{
-                    if (ViewBag.accountName != null)
+                    if (ViewBag.defaultSelectedTransactions != null)
                     {
                         <div class="transactionTableBox">
                             <table>
@@ -48,7 +49,6 @@
                                     <tr>
                                         <th>Sender</th>
                                         <th>Receiver</th>
-                                        
                                         <th>Date</th>
                                         <th>Start Currency</th> 
                                         <th>End Currency</th>
@@ -58,15 +58,15 @@
                                 </thead>
                                 <tbody>
                                     @{
-                                        if (ViewBag.SelectedTransactions != null)
+                                        if (ViewBag.defaultSelectedTransactions != null)
                                         {
-                                            foreach (var i in ViewBag.SelectedTransactions)
+                                            foreach (var i in ViewBag.defaultSelectedTransactions)
                                             {
                                                 <tr>
                                                     <td>@i.SENDER_ACCOUNT_ID</td>
                                                     <td>@i.RECEIVER_ACCOUNT_ID</td>
                                                     
-                                                    <td>@i.DATE</td>
+                                                    <td>@i.TRANSACTION_TIME</td>
                                                     <td>@i.START_CURRENCY</td>
                                                     <td>@i.END_CURRENCY</td>
                                                     <td>@i.EXCHANGE_RATE</td>

@@ -92,7 +92,71 @@ namespace Samolut_Fintech_Application.Controllers
 
             return View();
         }
+        
+        //all home page stuff
 
+        public async Task<IActionResult> ApplicationHome()
+        {
+
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //start every account on a likle default gbp
+            int DefaultAccount = 1;
+            var DefaultAccountDetails = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Include(i=>i.AccountTypeIdForeignKey)
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Where(i=>i.ACCOUNT_ID == 1).FirstOrDefaultAsync();
+            
+            
+            //default account stuff
+            ViewBag.ACCOUNT_ID = DefaultAccountDetails.ACCOUNT_ID;
+            ViewBag.COUNTRY_CURRENCY_NAME = DefaultAccountDetails.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME;
+            ViewBag.COUNTRY_CURRENCY_ID = DefaultAccountDetails.COUNTRY_CURRENCY_ID;
+            ViewBag.ACCOUNT_BALANCE = DefaultAccountDetails.ACCOUNT_BALANCE;
+            ViewBag.ACCOUNT_TYPE_ID = DefaultAccountDetails.ACCOUNT_TYPE_ID;
+            
+            var customerName = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i => i.FIRST_NAME).FirstOrDefaultAsync();
+            ViewBag.CustomerName = customerName;
+            
+            
+            //for filling out the form
+            var accounts = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+            
+            var defaultSelectedTransactions = await _context.Transaction
+                .Include(i =>
+                    i.SenderAccountIdForeignKey) //include the foreign keys so i know the details of each accoujnt
+                .Include(i => i.ReceiverAccountIdForeignKey)
+                .Where(i => i.SENDER_ACCOUNT_ID == 1 || i.RECEIVER_ACCOUNT_ID == 1).ToListAsync();
+
+            ViewBag.defaultSelectedTransactions = defaultSelectedTransactions;
+
+            return View(accounts);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApplicationHome(Account data)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+            return RedirectToAction("Login", "Account");
+            }
+
+            return View();
+        }
+        
+        
+        
 
         //all payments page stuff -------------------------------------------------
         public async Task<IActionResult> Payments()
@@ -104,44 +168,7 @@ namespace Samolut_Fintech_Application.Controllers
 
             return View();
         }
-
-        public async Task<IActionResult> ApplicationHome(int accountId)
-        {
-
-            if (HttpContext.Session.GetInt32("UserId") == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            var countryCurrencies = await _context.CurrentCurrency.ToListAsync();
-
-            var accounts = await _context.Account
-                .Include(i => i.CurrencyIdForeignKey)
-                .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
-
-            var customerName = await _context.Customer
-                .Where(i => i.CUSTOMER_ID == userId)
-                .Select(i => i.FIRST_NAME).FirstOrDefaultAsync();
-
-            //new code for the selected asccount passed in Data, above stuff is just my code for the dropdown again
-
-            var selectedId = accountId;
-            var selectedAccount = await _context.Account.FirstOrDefaultAsync(i => i.ACCOUNT_ID == selectedId);
-            ViewBag.SelectedTransactions = await _context.Transaction
-                .Include(i =>
-                    i.SenderAccountIdForeignKey) //include the foreign keys so i know the details of each accoujnt
-                .Include(i => i.ReceiverAccountIdForeignKey)
-                .Where(i => i.SENDER_ACCOUNT_ID == selectedId || i.RECEIVER_ACCOUNT_ID == selectedId).ToListAsync();
-
-            ViewBag.selectedAccountBalance = selectedAccount?.ACCOUNT_BALANCE;
-            ViewBag.accountName = selectedAccount?.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME;
-            ViewBag.CustomerName = customerName;
-
-
-            return View(accounts);
-        }
-
+        
         public async Task<IActionResult> TransferInternalCurrency()
         {
 
@@ -165,8 +192,6 @@ namespace Samolut_Fintech_Application.Controllers
             return View();
         }
         
-        
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CalculateInternalCurrency(InternalCurrencyModel data)
