@@ -10,7 +10,13 @@
 
     <form asp-action="ConfirmInternalTransfer" method="post">
         <button name="calculateButton" class="SendMoneySubmit" type="submit">Confirm and Send</button>
-        
+        @*to transfer all that data again to the actual transfer code*@
+        <input type="hidden" asp-for="SENDER_ACCOUNT_ID" />
+        <input type="hidden" asp-for="RECEIVER_ACCOUNT_ID" />
+        <input type="hidden" asp-for="AMOUNT" /> 
+        <input type="hidden" asp-for="EXCHANGE_RATE" />
+        <input type="hidden" asp-for="START_CURRENCY" />
+        <input type="hidden" asp-for="END_CURRENCY" />
         <span class="errorMessages">@ViewBag.ErrorMessage</span>
     </form>
     

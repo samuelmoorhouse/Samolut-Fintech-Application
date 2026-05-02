@@ -164,9 +164,7 @@ namespace Samolut_Fintech_Application.Controllers
             
             return View();
         }
-
-
-
+        
         
 
         [HttpPost]
@@ -182,6 +180,7 @@ namespace Samolut_Fintech_Application.Controllers
 
             if (ModelState.IsValid)
             {
+                //validation check before calculation, will do same in next post
                 //so im gonna check if the accounts were the same first
                 if (data.SENDER_ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID)
                 {
@@ -192,7 +191,20 @@ namespace Samolut_Fintech_Application.Controllers
                     return View("TransferInternalCurrency", data);
                 }
                 
-                
+                //check if they have enough money by comparing to balance
+                var SenderBalance = await _context.Account
+                    .Where(i => i.ACCOUNT_ID == data.SENDER_ACCOUNT_ID)
+                    .Select(i => i.ACCOUNT_BALANCE).FirstOrDefaultAsync();
+
+
+                if (SenderBalance < data.AMOUNT) //so not enough moneys
+                {
+                    ViewBag.accounts = await _context.Account
+                        .Include(i => i.CurrencyIdForeignKey)
+                        .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                    ViewBag.ErrorMessage = "Insufficient Funds!";
+                    return View("TransferInternalCurrency", data);
+                }
                 
                 //calculate exchange rate, so get sender and receiver and calculate it against the uks one
                 //ill store all the rates to gbp
@@ -256,14 +268,12 @@ namespace Samolut_Fintech_Application.Controllers
                 
             }
 
-            //if not need to relaoad page with eveythign it had before
+            //if not need to relaoad page with eveythign it had before, i use this code below allot abovewhenever invalid data
             ViewBag.accounts = await _context.Account
                 .Include(i => i.CurrencyIdForeignKey)
                 .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
-            //becuase my post is named differently to the file i have to tell it where to go back to
             ViewBag.ErrorMessage = "Model Invalid";
-            return View("TransferInternalCurrency", data);
-
+            return View("TransferInternalCurrency", data); //becuase my post is named differently to the file i have to tell it where to go back to
         }
         
         
@@ -323,9 +333,119 @@ namespace Samolut_Fintech_Application.Controllers
                 
             }
             int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //same validation as above for initial calculation
+            if (ModelState.IsValid)
+            {
+                //validation check before calculation, will do same in next post
+                //so im gonna check if the accounts were the same first
+                if (data.SENDER_ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID)
+                {
+                    ViewBag.accounts = await _context.Account
+                        .Include(i => i.CurrencyIdForeignKey)
+                        .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                    ViewBag.ErrorMessage = "Cannot send money to the same account! Choose a different account to receive funds.";
+                    return View("TransferInternalCurrency", data);
+                }
+                
+                //check if they have enough money by comparing to balance
+                var SenderBalance = await _context.Account
+                    .Where(i => i.ACCOUNT_ID == data.SENDER_ACCOUNT_ID)
+                    .Select(i => i.ACCOUNT_BALANCE).FirstOrDefaultAsync();
 
-            return View();
+                if (SenderBalance < data.AMOUNT) //so not enough moneys
+                {
+                    ViewBag.accounts = await _context.Account
+                        .Include(i => i.CurrencyIdForeignKey)
+                        .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                    ViewBag.ErrorMessage = "Insufficient Funds!"+SenderBalance;
+                    return View("TransferInternalCurrency", data);
+                }
+                
+                //calculate exchange rate, so get sender and receiver and calculate it against the uks one
+                //ill store all the rates to gbp
+                // formula is sender gbp rate / receiver gbp rate
+                var SenderCurrencyID = await _context.Account
+                    .Include(i => i.CurrencyIdForeignKey)
+                    .Where(i => i.ACCOUNT_ID == data.SENDER_ACCOUNT_ID)
+                    .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
+                
+                var ReciverCurrencyID= await _context.Account
+                    .Include(i => i.CurrencyIdForeignKey)
+                    .Where(i => i.ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID)
+                    .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
 
+                double SenderGBPRate = 0;
+                double ReceiverGBPRate = 0;
+                //though id use switch as its less code for this
+                switch(SenderCurrencyID)
+                {
+                    case 1: //gbp so no convert needed
+                        SenderGBPRate = 1;
+                        break;
+                    case 2: //eur to gbp
+                        SenderGBPRate = 0.8624;
+                        break;
+                    case 3:
+                        SenderGBPRate = 0.0046;
+                        break;
+                }
+
+                switch (ReciverCurrencyID)
+                {
+                    case 1: //gbp so no convert needed
+                        ReceiverGBPRate = 1;
+                        break;
+                    case 2: //eur to gbp
+                        ReceiverGBPRate = 0.8624;
+                        break;
+                    case 3:
+                        ReceiverGBPRate = 0.0046;
+                        break;
+                }
+
+                var ExchangeRate = SenderGBPRate / ReceiverGBPRate;
+                
+                double NewCurrencyAmount = Math.Round((data.AMOUNT * ExchangeRate),2); //so to 2dp
+                
+                //changing accounts balance then addin a trnsaction to table
+                
+                var SenderAccount = await _context.Account.Where(i=>i.ACCOUNT_ID == data.SENDER_ACCOUNT_ID).FirstOrDefaultAsync();
+                var ReceiverAccount = await _context.Account.Where(i=>i.ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID).FirstOrDefaultAsync();
+                SenderAccount.ACCOUNT_BALANCE -= data.AMOUNT;
+                ReceiverAccount.ACCOUNT_BALANCE += data.AMOUNT;
+                //so transaction
+                var TransactionData = new Transaction
+                {
+                    SENDER_ACCOUNT_ID = data.SENDER_ACCOUNT_ID,
+                    RECEIVER_ACCOUNT_ID = data.RECEIVER_ACCOUNT_ID,
+                    AMOUNT = data.AMOUNT,
+                    EXCHANGE_RATE = ExchangeRate,
+                    START_CURRENCY = SenderCurrencyID,
+                    END_CURRENCY = ReciverCurrencyID,
+                    TRANSACTION_TIME = DateTime.Now,
+                };
+                
+                _context.Transaction.Add(TransactionData);
+                await _context.SaveChangesAsync();
+                
+                
+                ViewBag.accounts = await _context.Account
+                    .Include(i => i.CurrencyIdForeignKey)
+                    .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+
+                ViewBag.ErrorMessage = "Success!";
+                
+                return View(data);
+            }
+
+            //if not need to relaoad page with eveythign it had before, i use this code below allot abovewhenever invalid data
+            ViewBag.accounts = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+            ViewBag.ErrorMessage = "Model Invalid";
+            return View(data);
+            
         }
     }
     
