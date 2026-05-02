@@ -19,10 +19,13 @@ namespace Samolut_Fintech_Application.Models.Transfers
         [Range(0,1000000)]
         public double AMOUNT { get; set; }
         
+        //added this so i can check if they have enough funds
+        public double ORIGINAL_AMOUNT { get; set; }
+        
         
         //this stuff gets calculated so isnt required until its calculated. added ? so can be null
         
-        public double? EXCHANGE_RATE { get; set; } 
+        public double EXCHANGE_RATE { get; set; } 
         public int? START_CURRENCY { get; set; }
         public int? END_CURRENCY { get; set; }
         

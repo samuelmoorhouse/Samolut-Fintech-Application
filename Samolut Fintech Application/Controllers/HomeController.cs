@@ -192,6 +192,7 @@ namespace Samolut_Fintech_Application.Controllers
             return View();
         }
         
+        //so this is for the initial calculation
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CalculateInternalCurrency(InternalCurrencyModel data)
@@ -273,7 +274,7 @@ namespace Samolut_Fintech_Application.Controllers
                         break;
                 }
 
-                var ExchangeRate = SenderGBPRate / ReceiverGBPRate;
+                double ExchangeRate = SenderGBPRate / ReceiverGBPRate;
                 
                 double NewCurrencyAmount = Math.Round((data.AMOUNT * ExchangeRate),2); //so to 2dp
                 
@@ -302,6 +303,7 @@ namespace Samolut_Fintech_Application.Controllers
         }
         
         
+        //this is for after calculation and to confirm before transaction
         public async Task<IActionResult> ConfirmInternalTransfer(double beforeAmount, int senderID, int receiverID, double exchangeRate, double currencyAmount, int startcurrencyID, int  endcurrencyID)
         {
             if (HttpContext.Session.GetInt32("UserId") == null)
@@ -313,6 +315,7 @@ namespace Samolut_Fintech_Application.Controllers
             
             var data = new InternalCurrencyModel
             {
+                ORIGINAL_AMOUNT = beforeAmount,
                 SENDER_ACCOUNT_ID = senderID,
                 RECEIVER_ACCOUNT_ID = receiverID,
                 AMOUNT = currencyAmount,
@@ -342,12 +345,10 @@ namespace Samolut_Fintech_Application.Controllers
                 .Where(i => i.ACCOUNT_ID == receiverID)
                 .Select(i => i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME).FirstOrDefaultAsync();
             
-            ViewBag.OrginalAmount = beforeAmount;
-            
             return View(data);
         }
         
-        //post to finally go through with transaction
+        //post to finally go through with transaction from the confirm of the thing above
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmInternalTransfer(InternalCurrencyModel data)
@@ -378,7 +379,7 @@ namespace Samolut_Fintech_Application.Controllers
                     .Where(i => i.ACCOUNT_ID == data.SENDER_ACCOUNT_ID)
                     .Select(i => i.ACCOUNT_BALANCE).FirstOrDefaultAsync();
 
-                if (SenderBalance < data.AMOUNT) //so not enough moneys
+                if (SenderBalance < data.ORIGINAL_AMOUNT) //so not enough moneys
                 {
                     ViewBag.accounts = await _context.Account
                         .Include(i => i.CurrencyIdForeignKey)
@@ -399,45 +400,12 @@ namespace Samolut_Fintech_Application.Controllers
                     .Include(i => i.CurrencyIdForeignKey)
                     .Where(i => i.ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID)
                     .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
-
-                double SenderGBPRate = 0;
-                double ReceiverGBPRate = 0;
-                //though id use switch as its less code for this
-                switch(SenderCurrencyID)
-                {
-                    case 1: //gbp so no convert needed
-                        SenderGBPRate = 1;
-                        break;
-                    case 2: //eur to gbp
-                        SenderGBPRate = 0.8624;
-                        break;
-                    case 3:
-                        SenderGBPRate = 0.0046;
-                        break;
-                }
-
-                switch (ReciverCurrencyID)
-                {
-                    case 1: //gbp so no convert needed
-                        ReceiverGBPRate = 1;
-                        break;
-                    case 2: //eur to gbp
-                        ReceiverGBPRate = 0.8624;
-                        break;
-                    case 3:
-                        ReceiverGBPRate = 0.0046;
-                        break;
-                }
-
-                var ExchangeRate = SenderGBPRate / ReceiverGBPRate;
-                
-                double NewCurrencyAmount = Math.Round((data.AMOUNT * ExchangeRate),2); //so to 2dp
                 
                 //changing accounts balance then addin a trnsaction to table
                 
                 var SenderAccount = await _context.Account.Where(i=>i.ACCOUNT_ID == data.SENDER_ACCOUNT_ID).FirstOrDefaultAsync();
                 var ReceiverAccount = await _context.Account.Where(i=>i.ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID).FirstOrDefaultAsync();
-                SenderAccount.ACCOUNT_BALANCE -= data.AMOUNT;
+                SenderAccount.ACCOUNT_BALANCE -= data.ORIGINAL_AMOUNT; //so take away gbp and then below add jpy cause i accidentally subtracted thiusands from gbp
                 ReceiverAccount.ACCOUNT_BALANCE += data.AMOUNT;
                 //so transaction
                 var TransactionData = new Transaction
@@ -445,7 +413,7 @@ namespace Samolut_Fintech_Application.Controllers
                     SENDER_ACCOUNT_ID = data.SENDER_ACCOUNT_ID,
                     RECEIVER_ACCOUNT_ID = data.RECEIVER_ACCOUNT_ID,
                     AMOUNT = data.AMOUNT,
-                    EXCHANGE_RATE = ExchangeRate,
+                    EXCHANGE_RATE = data.EXCHANGE_RATE,
                     START_CURRENCY = SenderCurrencyID,
                     END_CURRENCY = ReciverCurrencyID,
                     TRANSACTION_TIME = DateTime.Now,

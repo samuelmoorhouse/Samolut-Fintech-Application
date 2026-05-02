@@ -4,13 +4,14 @@
         <h2>Samolut Payments</h2>
     </div>
 
-    <a>Amount to be Sent: @ViewBag.SenderAccountSymbol@ViewBag.OrginalAmount @ViewBag.SenderAccountName </a>
+    <a>Amount to be Sent: @ViewBag.SenderAccountSymbol@Model.ORIGINAL_AMOUNT @ViewBag.SenderAccountName </a>
     <a>Exchange rate: @ViewBag.ReceiverAccountSymbol@Model.EXCHANGE_RATE @ViewBag.SenderAccountName to @ViewBag.ReceiverAccountName</a>
     <a>Amount to be Received in Native Currency: @Model.AMOUNT @ViewBag.ReceiverAccountName</a>
 
     <form asp-action="ConfirmInternalTransfer" method="post">
         <button name="calculateButton" class="SendMoneySubmit" type="submit">Confirm and Send</button>
-        @*to transfer all that data again to the actual transfer code*@
+        @*to transfer all that data again to the actual transfer code, already in model so dont need to add value*@
+        <input type="hidden" asp-for="ORIGINAL_AMOUNT" />
         <input type="hidden" asp-for="SENDER_ACCOUNT_ID" />
         <input type="hidden" asp-for="RECEIVER_ACCOUNT_ID" />
         <input type="hidden" asp-for="AMOUNT" /> 
