@@ -17,12 +17,12 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
         [Required]
         public double EXCHANGE_RATE { get; set; }
         [Required]
-        public string START_CURRENCY { get; set; }
+        public int START_CURRENCY { get; set; }
         [Required]
-        public string END_CURRENCY { get; set; }
+        public int END_CURRENCY { get; set; }
         [Required]
         //sends the dstabase the time it was done instead of the database choosing when the transaction happened, because i thought the c sharp was harder if i tried to ignore this.
-        public DateTime TRANSACTION_TIME { get; set; } = DateTime.Now;
+        public DateTime TRANSACTION_TIME { get; set; }
 
 
 
