@@ -7,15 +7,15 @@
     <div class="mainAppSpace">
         <div class="applicationBox">
             <div class="paymentTypeButtons">
-                <a asp-action="ExternalTransfer">Transfer To External Accounts (other peoples samolut accounts)</a>
-                <a asp-action="transferInternalBank">Transfer Money From Your Bank Accounts To Your Currency Accounts</a>
+                <a asp-action="TransferToExternal">Transfer To External Accounts (other peoples samolut accounts)</a>
+                <a asp-action="TransferBankToCurrency">Transfer Money From Your Bank Accounts To Your Currency Accounts</a>
                 <a asp-action="TransferInternalCurrency">Transfer Between Your Currency Accounts</a>
             </div>
             
             @* learnt tht these are razor comments and they can be used anywhere and dont show on inspect element*@
             
                 <div class="TransferBox">
-                    <form asp-action="CalculateInternalCurrency" method="post">
+                    <form asp-action="CalculateCurrency" method="post">
                         @Html.AntiForgeryToken()
 
                         @*what im sending it from*@
@@ -27,7 +27,7 @@
                             @{
                                 foreach(var i in ViewBag.accounts)
                                 {
-                                    <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME</option>
+                                    <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
                                 }
                             }
                             
@@ -51,7 +51,7 @@
                             @{
                                 foreach (var i in ViewBag.accounts)
                                 {
-                                    <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME</option>
+                                    <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
                                 }
                             }
 
@@ -64,7 +64,7 @@
                         <span class="errorMessages">@ViewBag.ErrorMessage</span>
                     </form>
                 </div>
-            }
+            
                 
 
         </div>

@@ -8,7 +8,7 @@
     <a>Exchange rate: @ViewBag.ReceiverAccountSymbol@Model.EXCHANGE_RATE @ViewBag.SenderAccountName to @ViewBag.ReceiverAccountName</a>
     <a>Amount to be Received in Native Currency: @Model.AMOUNT @ViewBag.ReceiverAccountName</a>
 
-    <form asp-action="ConfirmInternalTransfer" method="post">
+    <form asp-action="ConfirmTransfer" method="post">
         <button name="calculateButton" class="SendMoneySubmit" type="submit">Confirm and Send</button>
         @*to transfer all that data again to the actual transfer code, already in model so dont need to add value*@
         <input type="hidden" asp-for="ORIGINAL_AMOUNT" />

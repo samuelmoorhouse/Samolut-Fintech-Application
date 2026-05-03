@@ -130,13 +130,15 @@ namespace Samolut_Fintech_Application.Controllers
             //for filling out the form
             var accounts = await _context.Account
                 .Include(i => i.CurrencyIdForeignKey)
-                .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
             
             var defaultSelectedTransactions = await _context.Transaction
                 .Include(i =>
                     i.SenderAccountIdForeignKey) //include the foreign keys so i know the details of each accoujnt
                 .Include(i => i.ReceiverAccountIdForeignKey)
                 .Where(i => i.SENDER_ACCOUNT_ID == 1 || i.RECEIVER_ACCOUNT_ID == 1).ToListAsync();
+                //the || means or
 
             ViewBag.defaultSelectedTransactions = defaultSelectedTransactions;
 
@@ -157,8 +159,10 @@ namespace Samolut_Fintech_Application.Controllers
         
         
         
-
-        //all payments page stuff -------------------------------------------------
+    
+        
+        
+        //all payments page stuff -----------------------------------------------------------
         public async Task<IActionResult> Payments()
         {
             if (HttpContext.Session.GetInt32("UserId") == null)
@@ -184,7 +188,8 @@ namespace Samolut_Fintech_Application.Controllers
             var accounts = await _context.Account
                 .Include(i =>
                     i.CurrencyIdForeignKey) //added a  foreign key in my db, so i can read off trhe currency names as i made it to be 3nf so its in seperate table
-                .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
 
             ViewBag.accounts = accounts;
             //post hasnt happened yet so make it false when page first loads
@@ -195,7 +200,7 @@ namespace Samolut_Fintech_Application.Controllers
         //so this is for the initial calculation
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CalculateInternalCurrency(InternalCurrencyModel data)
+        public async Task<IActionResult> CalculateCurrency(InternalCurrencyModel data)
         {
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
@@ -212,7 +217,8 @@ namespace Samolut_Fintech_Application.Controllers
                 {
                     ViewBag.accounts = await _context.Account
                         .Include(i => i.CurrencyIdForeignKey)
-                        .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                        .Where(i => i.CUSTOMER_ID == userId)
+                        .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
                     ViewBag.ErrorMessage = "Cannot send money to the same account! Choose a different account to receive funds.";
                     return View("TransferInternalCurrency", data);
                 }
@@ -227,7 +233,8 @@ namespace Samolut_Fintech_Application.Controllers
                 {
                     ViewBag.accounts = await _context.Account
                         .Include(i => i.CurrencyIdForeignKey)
-                        .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                        .Where(i => i.CUSTOMER_ID == userId)
+                        .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
                     ViewBag.ErrorMessage = "Insufficient Funds!";
                     return View("TransferInternalCurrency", data);
                 }
@@ -280,7 +287,7 @@ namespace Samolut_Fintech_Application.Controllers
                 
                 
                 
-                return RedirectToAction("ConfirmInternalTransfer", new
+                return RedirectToAction("ConfirmTransfer", new
                 {
                     senderID = data.SENDER_ACCOUNT_ID,
                     receiverID = data.RECEIVER_ACCOUNT_ID,
@@ -297,14 +304,15 @@ namespace Samolut_Fintech_Application.Controllers
             //if not need to relaoad page with eveythign it had before, i use this code below allot abovewhenever invalid data
             ViewBag.accounts = await _context.Account
                 .Include(i => i.CurrencyIdForeignKey)
-                .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
             ViewBag.ErrorMessage = "Model Invalid";
             return View("TransferInternalCurrency", data); //becuase my post is named differently to the file i have to tell it where to go back to
         }
         
         
         //this is for after calculation and to confirm before transaction
-        public async Task<IActionResult> ConfirmInternalTransfer(double beforeAmount, int senderID, int receiverID, double exchangeRate, double currencyAmount, int startcurrencyID, int  endcurrencyID)
+        public async Task<IActionResult> ConfirmTransfer(double beforeAmount, int senderID, int receiverID, double exchangeRate, double currencyAmount, int startcurrencyID, int  endcurrencyID)
         {
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
@@ -351,7 +359,7 @@ namespace Samolut_Fintech_Application.Controllers
         //post to finally go through with transaction from the confirm of the thing above
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ConfirmInternalTransfer(InternalCurrencyModel data)
+        public async Task<IActionResult> ConfirmTransfer(InternalCurrencyModel data)
         {
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
@@ -369,7 +377,8 @@ namespace Samolut_Fintech_Application.Controllers
                 {
                     ViewBag.accounts = await _context.Account
                         .Include(i => i.CurrencyIdForeignKey)
-                        .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                        .Where(i => i.CUSTOMER_ID == userId)
+                        .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
                     ViewBag.ErrorMessage = "Cannot send money to the same account! Choose a different account to receive funds.";
                     return View("TransferInternalCurrency", data);
                 }
@@ -383,7 +392,12 @@ namespace Samolut_Fintech_Application.Controllers
                 {
                     ViewBag.accounts = await _context.Account
                         .Include(i => i.CurrencyIdForeignKey)
-                        .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                        .Where(i => i.CUSTOMER_ID == userId)
+                        .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                    ViewBag.bankAccounts = await _context.Account
+                        .Include(i => i.CurrencyIdForeignKey)
+                        .Where(i => i.CUSTOMER_ID == userId)
+                        .Where(i=>i.ACCOUNT_TYPE_ID == 2).ToListAsync();
                     ViewBag.ErrorMessage = "Insufficient Funds!"+SenderBalance;
                     return View("TransferInternalCurrency", data);
                 }
@@ -436,10 +450,54 @@ namespace Samolut_Fintech_Application.Controllers
             ViewBag.accounts = await _context.Account
                 .Include(i => i.CurrencyIdForeignKey)
                 .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+            ViewBag.bankAccounts = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 2).ToListAsync();
             ViewBag.ErrorMessage = "Model Invalid";
             return View(data);
             
         }
+        
+        
+        
+        //BANK---------------------------------------------------------------------
+        //ok so for bank transfer to currency account its same code as above but changed slightly for bank accounts
+        
+        public async Task<IActionResult> TransferBankToCurrency()
+        {
+
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            var countryCurrencies = await _context.CurrentCurrency.ToListAsync();
+
+
+            var accounts = await _context.Account
+                .Include(i =>
+                    i.CurrencyIdForeignKey) //added a  foreign key in my db, so i can read off trhe currency names as i made it to be 3nf so its in seperate table
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+            
+            //added bank accounts
+            var bankAccounts = await _context.Account
+                .Include(i =>
+                    i.CurrencyIdForeignKey) //added a  foreign key in my db, so i can read off trhe currency names as i made it to be 3nf so its in seperate table
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 2).ToListAsync();
+            
+            ViewBag.bankAccounts = bankAccounts;
+            ViewBag.accounts = accounts;
+            //post hasnt happened yet so make it false when page first loads
+            
+            return View();
+        }
+        
+        
+        
     }
     
     
