@@ -16,6 +16,10 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
         public double ACCOUNT_BALANCE { get; set; }
         [Required]
         public int ACCOUNT_TYPE_ID { get;set; }
+        
+        //added name so i can name banks
+        
+        public string? ACCOUNT_NAME { get; set; } //? as it can be null
 
 
         //from my sql the keys what i need tro add 

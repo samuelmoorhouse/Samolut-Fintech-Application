@@ -1,0 +1,77 @@
+@model Samolut_Fintech_Application.Models.Transfers.ExternalTransferModel
+<body>
+    <div class="topDisplay">
+        <h2>Samolut Payments</h2>
+    </div>
+
+    <div class="mainAppSpace">
+        <div class="applicationBox">
+            <div class="paymentTypeButtons">
+                <a asp-action="TransferToExternal">Transfer To External Accounts (other peoples samolut accounts)</a>
+                <a asp-action="TransferBankToCurrency">Transfer Money From Your Bank Accounts To Your Currency Accounts</a>
+                <a asp-action="TransferInternalCurrency">Transfer Between Your Currency Accounts</a>
+            </div>
+            
+            @* learnt tht these are razor comments and they can be used anywhere and dont show on inspect element*@
+            
+                <div class="TransferBox">
+                    <form asp-action="CalculateCurrency" method="post">
+                        @Html.AntiForgeryToken()
+
+                        @*Recipients currency accounts drop down*@
+                        <label for="RECEIVER_ACCOUNT_ID">Choose which of @ViewBag.externalName's currency accounts to send money to.</label><br/>
+                        
+                        @*display the currency accounts the same way i have in the home page*@
+                        <select asp-for="RECEIVER_ACCOUNT_ID" id="RECEIVER_ACCOUNT_ID" name="RECEIVER_ACCOUNT_ID" required>
+                            <option>Select Recipients Currency Account to Transfer To: </option>
+                            @{
+                                foreach(var i in ViewBag.recipientsAccounts) @*so recipients instead of just accounts*@
+                                {
+                                    <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME</option>
+                                }
+                            }
+                            
+                        </select>
+                        <span asp-validation-for="RECEIVER_ACCOUNT_ID" class="errorMessages"></span><br />
+                        
+                        
+                        
+                        
+                        @*for personal accounts*@
+                        <label for="AMOUNT">Amount to Send to @ViewBag.externalName</label>
+                        <input asp-for="AMOUNT" name="AMOUNT" type="number" step="0.01" placeholder="0.00" required/>
+                        <span asp-validation-for="AMOUNT" class="errorMessages"></span><br />
+                        
+                        @*sending account, ill have to ask them to submit a number then ill che*@
+                        <label for="SENDER_ACCOUNT_ID">Account to Send Money</label>
+                        <select asp-for="SENDER_ACCOUNT_ID" id="SENDER_ACCOUNT_ID" name="SENDER_ACCOUNT_ID" required>
+                            <option>Select Your Currency Account to Transfer From: </option>
+                            @{
+                                foreach (var i in ViewBag.accounts)
+                                {
+                                    <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
+                                }
+                            }
+
+                        </select>
+                        <span asp-validation-for="SENDER_ACCOUNT_ID" class="errorMessages"></span><br />
+                        
+                        @*Wanted the users to calculate and see the exchange rate before they sent the money*@
+                        <label for="calculateButton">Calculate Exchange Rate</label>
+                        <button name="calculateButton" class="SendMoneySubmit" type="submit">Calculate</button><br/>
+                        <span class="errorMessages">@ViewBag.ErrorMessage</span>
+                    </form>
+                </div>
+            
+                
+
+        </div>
+    </div>
+                    
+</body>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
