@@ -461,7 +461,7 @@ namespace Samolut_Fintech_Application.Controllers
         
         
         
-        //BANK---------------------------------------------------------------------
+        //BANK---
         //ok so for bank transfer to currency account its same code as above but changed slightly for bank accounts
         
         public async Task<IActionResult> TransferBankToCurrency()
@@ -495,6 +495,114 @@ namespace Samolut_Fintech_Application.Controllers
             
             return View();
         }
+        
+        //EXTERNALLLL ----------
+        
+        public async Task<IActionResult> ChooseExternal()
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            return View();
+                
+        }
+        
+        //post for choose page to make sure the account matches who they wanna send money too
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReceiveExternalCustomer(ExternalCustomerModel data)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+                {
+                return RedirectToAction("Login", "Account");
+                }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+            if (ModelState.IsValid)
+            {   
+                //see if theres matcvhing account
+                var matchingAccountId = await _context.Customer
+                    .Where(i => i.PHONE_NUMBER == data.PHONE_NUMBER)
+                    .Select(i => i.CUSTOMER_ID).FirstOrDefaultAsync();
+
+                if (matchingAccountId != 0)
+                {
+                    var matchingAccountFirstName = await _context.Customer
+                        .Where(i => i.PHONE_NUMBER == data.PHONE_NUMBER)
+                        .Select(i => i.FIRST_NAME).FirstOrDefaultAsync();
+                    var matchingAccountLastName = await _context.Customer
+                        .Where(i => i.PHONE_NUMBER == data.PHONE_NUMBER)
+                        .Select(i => i.LAST_NAME).FirstOrDefaultAsync();
+
+                    var matchingFullName = matchingAccountFirstName + " " + matchingAccountLastName;
+                    
+                    if (matchingFullName == data.FULL_NAME)
+                    {
+                        ViewBag.ConfirmMessage = "Account Found and Names Match!";
+                        ViewBag.ExternalName = matchingFullName;
+                        ViewBag.ExternalID = matchingAccountId;
+                        
+                    }
+                    else
+                    {
+                        ViewBag.ConfirmMessage = "Account Found but Names don't Match. This accounts Full name is: " + matchingFullName + ". If correct continue with transaction, or try another phone number.";
+                        ViewBag.ExternalName = matchingFullName;
+                        ViewBag.ExternalID = matchingAccountId;
+
+                    }
+                    
+                    
+                    
+                }
+                else
+                {
+                    ViewBag.ConfirmMessage = "Account Not Found.";
+                }
+                
+            
+
+            }
+            
+
+            return View("ChooseExternal", data);
+            
+
+        }
+        
+        public async Task<IActionResult> TransferToExternal(ExternalTransferModel data)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            var accounts = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey) //added a  foreign key in my db, so i can read off trhe currency names as i made it to be 3nf so its in seperate table
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+            
+            ViewBag.accounts = accounts;
+
+            int externalAccountId = data.CUSTOMER_ID;
+            
+            var recipientsAccounts = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.CUSTOMER_ID == externalAccountId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync(); //onl;y there currency accounts
+            
+            ViewBag.recipientsAccounts =  recipientsAccounts;
+            ViewBag.externalName = data.FULL_NAME;
+                
+            return View(data);
+                
+        }
+        
+        
+        
         
         
         

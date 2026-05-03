@@ -19,7 +19,7 @@
                         @Html.AntiForgeryToken()
 
                         @*what im sending it from*@
-                        <label for="selectAccountTransfer1">Account to Send Money</label><br/>
+                        <label for="SENDER_ACCOUNT_ID">Account to Send Money</label><br/>
                         
                         @*display the currency accounts the same way i have in the home page*@
                         <select asp-for="SENDER_ACCOUNT_ID" id="SENDER_ACCOUNT_ID" name="SENDER_ACCOUNT_ID" required>
@@ -45,7 +45,7 @@
 
                         
                         @*receiviong account*@
-                        <label for="selectAccountTransfer2">Account to Receive Money</label>
+                        <label for="RECEIVER_ACCOUNT_ID">Account to Receive Money</label>
                         <select asp-for="RECEIVER_ACCOUNT_ID" id="RECEIVER_ACCOUNT_ID" name="RECEIVER_ACCOUNT_ID" required>
                             <option>Select Currency Account to Transfer From: </option>
                             @{
