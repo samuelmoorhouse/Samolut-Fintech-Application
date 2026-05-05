@@ -56,6 +56,46 @@ namespace Samolut_Fintech_Application.Controllers
             }
             return View(data); //if it doesn't pass the asp-validation stuff
         }
+        
+        
+        //post for signup
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SignUp(Customer data)
+        {
+            var newCustomer = new Customer
+            {
+                FIRST_NAME = data.FIRST_NAME,
+                MIDDLE_NAME = data.MIDDLE_NAME,
+                LAST_NAME = data.LAST_NAME,
+                PASSWORD = data.PASSWORD,
+                PHONE_NUMBER = data.PHONE_NUMBER
+            };
+            
+            _context.Customer.Add(newCustomer);
+            await _context.SaveChangesAsync();
+            
+            
+            //make them a default gbp currency account.
+            var gdpAccount = _context.CurrencyAccounts.Where(i => i.CURRENCY_ACCOUNT_ID == 1).FirstOrDefault();
+            var defaultAccount = new Account
+            {
+                CUSTOMER_ID = newCustomer.CUSTOMER_ID,
+                COUNTRY_CURRENCY_ID = gdpAccount.COUNTRY_CURRENCY_ID,
+                ACCOUNT_BALANCE = 0,
+                ACCOUNT_TYPE_ID = gdpAccount.ACCOUNT_TYPE_ID,
+                ACCOUNT_NAME = gdpAccount.ACCOUNT_NAME
+            };
+            
+            
+            _context.Account.Add(defaultAccount);
+            await _context.SaveChangesAsync();
+            
+            
+            //give them a little message to show them where to add account and add funds.
+            ViewBag.WelcomeMessage = "Welcome to Samolut. To deposit money into this currency account connect a bank account in the Add Page and go to Connect Bank. To add more Currencies, go to the Add Page and go to Add Currency Account.";
+            return RedirectToAction("Login", "Account");
+        }
     
         
     }

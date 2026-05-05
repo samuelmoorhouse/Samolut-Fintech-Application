@@ -21,6 +21,9 @@ namespace Samolut_Fintech_Application.Data
         public DbSet<Transaction> Transaction { get; set; }
         public DbSet<Staff> Staff { get; set; }
         public DbSet<Role> Role { get; set; } 
+        public DbSet<BankAccounts> BankAccounts { get; set; }
+        public DbSet<CurrencyAccounts> CurrencyAccounts { get; set; }
+        
 
 
 

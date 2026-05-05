@@ -9,6 +9,7 @@ using Samolut_Fintech_Application.Models;
 using Samolut_Fintech_Application.Models.DatabaseModels;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Samolut_Fintech_Application.Models.Transfers;
@@ -82,16 +83,7 @@ namespace Samolut_Fintech_Application.Controllers
         }
 
 
-        public IActionResult Add()
-        {
-            if (HttpContext.Session.GetInt32("UserId") == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-
-            return View();
-        }
+       
         
         //all home page stuff
 
@@ -105,7 +97,8 @@ namespace Samolut_Fintech_Application.Controllers
 
             int? userId = HttpContext.Session.GetInt32("UserId");
             
-            //start every account on a likle default gbp
+            //start every account on a likle default gbp, this will be made on sign up.
+            
             int DefaultAccount = 1;
             var DefaultAccountDetails = await _context.Account
                 .Include(i => i.CurrencyIdForeignKey)
@@ -591,8 +584,8 @@ namespace Samolut_Fintech_Application.Controllers
             
             var recipientsAccounts = await _context.Account
                 .Include(i => i.CurrencyIdForeignKey)
-                .Where(i => i.CUSTOMER_ID == externalAccountId)
-                .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync(); //onl;y there currency accounts
+                .Where(i => i.CUSTOMER_ID == externalAccountId).ToListAsync();
+                //.Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync(); //was only currency accounts but the project brief says it should be both
             
             ViewBag.recipientsAccounts =  recipientsAccounts;
             ViewBag.externalName = data.FULL_NAME;
@@ -603,9 +596,180 @@ namespace Samolut_Fintech_Application.Controllers
         
         
         
+        //All Addd money page stuff -------------------------
+        public IActionResult Add()
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+
+
+            return View();
+        }
         
         
+        public async Task<IActionResult> ConnectBank()
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+            var bankAccounts = await _context.BankAccounts
+                .Include(i => i.CurrencyIdForeignKey)
+                .ToListAsync();
+            
+            var banksAlreadyGot = await _context.Account
+                .Where(i=>i.ACCOUNT_TYPE_ID == 2)
+                .Where(i=>i.CUSTOMER_ID == userId)
+                .Select(i=>i.ACCOUNT_NAME).ToListAsync();
+
+            //remove all if in banks already got
+            bankAccounts.RemoveAll(i => banksAlreadyGot.Contains(i.ACCOUNT_NAME));
+            ViewBag.bankAccounts = bankAccounts;
+            
+            return View();
+        }
         
+        //post for connect bank, so to actuall connect chosen bank
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConnectBank(AddBankModel data)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            int userId = HttpContext.Session.GetInt32("UserId").Value; //used . value to get exact value so i can put in sql
+            
+            //depending on what bank ill choose how much mioney is in
+            // ill make it random but banks differ
+            
+            //llods is 0-10000, ill make nationwide 10000-50000, and HSBC Private Account 250,000 to 500,000
+            if (ModelState.IsValid)
+            {
+                double bankBalance = 0;
+                if (data.BANK_ID == 1)
+                {
+                    //lloyds 0-10000
+                    bankBalance = RandomNumberGenerator.GetInt32(0, 10000);
+                }
+                else if (data.BANK_ID == 2)
+                {
+                    //nationwide 10000-50000
+                    bankBalance = RandomNumberGenerator.GetInt32(10000, 50000);
+                }
+                else if (data.BANK_ID == 3)
+                {
+                    //HSBC private 250,000 to 500,000
+                    bankBalance = RandomNumberGenerator.GetInt32(250000, 500000);
+                }
+
+                //get bank details
+                var bankSelected = await _context.BankAccounts
+                    .Include(i => i.CurrencyIdForeignKey)
+                    .Where(i => i.BANK_ID == data.BANK_ID).FirstOrDefaultAsync();
+
+                //add posted bank to there accounts page
+
+                var addBankAccount = new Account
+                {
+                    CUSTOMER_ID = userId,
+                    COUNTRY_CURRENCY_ID = bankSelected.COUNTRY_CURRENCY_ID,
+                    ACCOUNT_BALANCE = bankBalance,
+                    ACCOUNT_TYPE_ID = bankSelected.ACCOUNT_TYPE_ID,
+                    ACCOUNT_NAME = bankSelected.ACCOUNT_NAME
+                };
+                _context.Add(addBankAccount);
+                await _context.SaveChangesAsync();
+                ViewBag.ErrorMessage = "Success!";
+                
+                return RedirectToAction("ApplicationHome");
+            }
+            var bankAccounts = await _context.BankAccounts
+                .Include(i => i.CurrencyIdForeignKey)
+                
+                .ToListAsync();
+            ViewBag.bankAccounts = bankAccounts;
+            ViewBag.ErrorMessage = "Invalid Input!";
+            return View();
+        }
+        
+        //basicaly same code as the add bank
+        public async Task<IActionResult> AddCurrency()
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+            //exact same as add bank but for add currency and the currencies thy already have
+            var currencyAccounts = await _context.CurrencyAccounts
+                .Include(i => i.CurrencyIdForeignKey)
+                .ToListAsync();
+            
+            var currenciesAlreadyGot = await _context.Account
+                .Where(i=>i.ACCOUNT_TYPE_ID == 1) //1 fir all currency accounts not bansk
+                .Where(i=>i.CUSTOMER_ID == userId)
+                .Select(i=>i.ACCOUNT_NAME).ToListAsync();
+
+            currencyAccounts.RemoveAll(i => currenciesAlreadyGot.Contains(i.ACCOUNT_NAME));
+            ViewBag.currencyAccounts = currencyAccounts;
+            
+            return View();
+        }
+        
+         [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddCurrency(AddCurrencyModel data)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            int userId = HttpContext.Session.GetInt32("UserId").Value; //used . value to get exact value so i can put in sql
+            
+            //same code to add currency to bank without adding a balance.
+            if (ModelState.IsValid)
+            {
+                double bankBalance = 0;
+
+                //get bank details
+                var currencyAccountSelected = await _context.CurrencyAccounts
+                    .Include(i => i.CurrencyIdForeignKey)
+                    .Where(i => i.CURRENCY_ACCOUNT_ID == data.CURRENCY_ACCOUNT_ID).FirstOrDefaultAsync();
+
+                //add posted bank to there accounts page
+
+                var addBankAccount = new Account
+                {
+                    CUSTOMER_ID = userId,
+                    COUNTRY_CURRENCY_ID = currencyAccountSelected.COUNTRY_CURRENCY_ID,
+                    ACCOUNT_BALANCE = bankBalance,
+                    ACCOUNT_TYPE_ID = currencyAccountSelected.ACCOUNT_TYPE_ID,
+                    ACCOUNT_NAME = currencyAccountSelected.ACCOUNT_NAME
+                };
+                _context.Add(addBankAccount);
+                await _context.SaveChangesAsync();
+                ViewBag.ErrorMessage = "Success!";
+                
+                return RedirectToAction("ApplicationHome");
+            }
+            var bankAccounts = await _context.BankAccounts
+                .Include(i => i.CurrencyIdForeignKey)
+                
+                .ToListAsync();
+            ViewBag.bankAccounts = bankAccounts;
+            ViewBag.ErrorMessage = "Invalid Input!";
+            return View();
+        }
+
     }
     
     
