@@ -27,7 +27,7 @@
                             @{
                                 foreach(var i in ViewBag.bankAccounts)
                                 {
-                                    <option value="@i.ACCOUNT_ID">@i.ACCOUNT_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE @i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME </option>
+                                    <option value="@i.ACCOUNT_ID">@i.ACCOUNT_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
                                 }
                             }
                             
@@ -51,7 +51,7 @@
                             @{
                                 foreach (var i in ViewBag.accounts)
                                 {
-                                    <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
+                                    <option value="@i.ACCOUNT_ID">@i.ACCOUNT_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
                                 }
                             }
 

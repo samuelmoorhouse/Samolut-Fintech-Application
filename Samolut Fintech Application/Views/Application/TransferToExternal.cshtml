@@ -19,18 +19,18 @@
                         @Html.AntiForgeryToken()
 
                         @*Recipients currency accounts drop down*@
+                        <p>You can send money to there currency accounts or directly to there bank accounts.</p>
                         <label for="RECEIVER_ACCOUNT_ID">Choose which of @ViewBag.externalName's currency accounts to send money to.</label><br/>
-                        
                         @*display the currency accounts the same way i have in the home page*@
                         <select asp-for="RECEIVER_ACCOUNT_ID" id="RECEIVER_ACCOUNT_ID" name="RECEIVER_ACCOUNT_ID" required>
                             <option>Select Recipients Currency Account to Transfer To: </option>
                             @{
-                                foreach(var i in ViewBag.recipientsAccounts) @*so recipients instead of just accounts*@
+                                foreach (var i in ViewBag.recipientsAccounts) @*so recipients instead of just accounts*@
                                 {
-                                    <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME</option>
+                                    <option value="@i.ACCOUNT_ID">@i.ACCOUNT_NAME</option>
                                 }
                             }
-                            
+
                         </select>
                         <span asp-validation-for="RECEIVER_ACCOUNT_ID" class="errorMessages"></span><br />
                         
@@ -49,7 +49,7 @@
                             @{
                                 foreach (var i in ViewBag.accounts)
                                 {
-                                    <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
+                                    <option value="@i.ACCOUNT_ID">@i.ACCOUNT_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
                                 }
                             }
 

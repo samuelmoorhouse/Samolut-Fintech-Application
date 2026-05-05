@@ -1,0 +1,43 @@
+@model Samolut_Fintech_Application.Models.Transfers.AddBankModel
+<body>
+<div class="topDisplay">
+    <h2>Samolut Payments</h2>
+</div>
+
+<div class="mainAppSpace">
+    <div class="applicationBox">
+        <div class="paymentTypeButtons">
+            <a asp-action="AddCurrency">Add Currency Account</a>
+            <a asp-action="ConnectBank">Connect Bank Account</a>
+        </div>
+            
+        <div class="TransferBox">
+            <form asp-action="ConnectBank" method="post">
+                @Html.AntiForgeryToken()
+
+               
+                <label for="BANK_ID">Choose a Bank account to connect to Samolut</label><br/>
+                @*display the bank accounts they can have*@
+                <select asp-for="BANK_ID" id="BANK_ID" name="BANK_ID" required>
+                    <option>Select Bank to Connect</option>
+                    @{
+                        foreach(var i in ViewBag.bankAccounts) @*so recipients instead of just accounts*@
+                        {
+                            <option value="@i.BANK_ID">@i.ACCOUNT_NAME - @i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="BANK_ID" class="errorMessages"></span><br />
+                <button type="submit">Confirm and Connect Bank</button>
+            </form>
+        </div>
+    </div>
+</div>
+                    
+</body>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

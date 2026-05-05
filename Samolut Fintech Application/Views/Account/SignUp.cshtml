@@ -1,52 +1,46 @@
-﻿@{
+﻿@model Samolut_Fintech_Application.Models.DatabaseModels.Customer
+@{
     Layout = "_loginSignupLayout";
 }
 
 <body>
-    <div class="loginSpace">
-        <div class="signupDiv">
-            <div class="signupLeft">
-                
-                <form method="post">
-                    <h2>Join Samolut!</h2>
-                    <div class="labelAndInput">
-                        <label for="fname" class="formLabels">First Name:</label><br />
-                        <input type="text" id="fname" name="fname" placeholder="Enter your First Name" required><br />
-                    </div>
-                    <div class="labelAndInput">
-                        <label for="mname" class="formLabels">Middle Name: (Optional)</label><br />
-                        <input type="text" id="mname" name="mname" placeholder="Enter your Middle Name"><br />
-                    </div>
-                    
-                    <div class="labelAndInput">
-                        <label for="lname" class="formLabels">Last Name:</label><br />
-                        <input type="text" id="lname" name="lname" placeholder="Enter your Last Name" required><br />
-                    </div>
-                </form>
-                
+<div class="loginSpace">
+    <div class="signupDiv">
+        <form method="post" asp-action="SignUp">
+        <div class="signupLeft">
+            <h2>Join Samolut!</h2>
+            <div class="labelAndInput">
+                <label for="FIRST_NAME" class="formLabels">First Name:</label><br/>
+                <input type="text" id="fname" asp-for="FIRST_NAME" placeholder="Enter your First Name" required><br/>
+            </div>
+            <div class="labelAndInput">
+                <label for="MIDDLE_NAME" class="formLabels">Middle Name: (Optional)</label><br/>
+                <input type="text" id="mname" asp-for="MIDDLE_NAME" placeholder="Enter your Middle Name"><br/>
+            </div>
+
+            <div class="labelAndInput">
+                <label for="LAST_NAME" class="formLabels">Last Name:</label><br/>
+                <input type="text" id="lname" asp-for="LAST_NAME" placeholder="Enter your Last Name" required><br/>
             </div>
 
 
+        </div>
+        <div class="signupRight">
+            <div class="labelAndInput">
+                <label for="PHONE_NUMBER" class="formLabels">Phone Number:</label><br/>
+                <input type="text" id="phone2" asp-for="PHONE_NUMBER" placeholder="Enter your Phone Number" required><br/>
+            </div>
 
-
-
-            <div class="signupRight">
-                <form method="post">
-                    <div class="labelAndInput">
-                        <label for="phone2" class="formLabels">Phone Number:</label><br />
-                        <input type="text" id="phone2" name="phone2" placeholder="Enter your Phone Number" required><br />
-                    </div>
-                    
-                    <div class="labelAndInput">
-                        <label for="password2" class="formLabels">Password: </label><br />
-                        <!--csause i have password using the same css i jhsed passwiord 2 same for phone-->
-                        <input type="password2" id="password2" name="password2" placeholder="Enter your Password" required><br />
-                    </div>
-                    <div class="labelAndInput">
-                        <a class="Submit" href="/Application/ApplicationHome">Submit</a>
-                    </div>
-                </form>
+            <div class="labelAndInput">
+                <label for="PASSWORD" class="formLabels">Password: </label><br/>
+                <!--csause i have password using the same css i jhsed passwiord 2 same for phone-->
+                <input type="text" id="password2" asp-for="PASSWORD" placeholder="Enter your Password" required><br/>
+            </div>
+            <div class="labelAndInput">
+                <button class="Submit" type="submit">Submit</button>
             </div>
         </div>
+        </form>
+    </div>
     </div>
 </body>

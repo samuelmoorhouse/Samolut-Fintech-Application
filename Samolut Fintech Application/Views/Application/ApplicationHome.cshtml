@@ -13,7 +13,6 @@
 <body>
     <div class="mainAppSpace">
         <div class="applicationBox">
-
             <div class="currentSelectedAccountBox">
                 @* select account id is  i know what account is selected so i can then display whatever else *@
                 <div class="accountSelectedBox">
@@ -41,6 +40,12 @@
             <h3>History</h3>
                 @*for transactions to be displayed only if somethings selecte, so chgecking it againsta a viewbag i used above*@
                 @{
+                    //for welcome messge
+                    if (ViewBag.WelcomeMessage != null)
+                    {
+                        <span>@ViewBag.WelcomeMessage</span>
+                    }
+                    
                     if (ViewBag.defaultSelectedTransactions != null)
                     {
                         <div class="transactionTableBox">
