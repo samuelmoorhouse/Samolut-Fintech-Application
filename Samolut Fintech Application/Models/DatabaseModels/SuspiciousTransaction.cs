@@ -25,6 +25,8 @@ public class SuspiciousTransaction
     //added reason to transaction for suspicion
     public string? SUSPENDED_TRANSACTION_REASON { get; set; }
     
+    public double ORIGINAL_AMOUNT { get; set; }
+    
     
     
     
