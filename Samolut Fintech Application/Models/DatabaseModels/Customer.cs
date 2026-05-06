@@ -17,6 +17,10 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
         public string PHONE_NUMBER { get; set; }
         [Required]
         public string PASSWORD { get; set; }
+        
+        //added for the suspended account stuff
+        [Required]
+        public int SUSPENDED { get; set; }
 
     }
 }

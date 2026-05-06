@@ -23,7 +23,7 @@
                     @{
                         foreach(var i in ViewBag.bankAccounts) @*so recipients instead of just accounts*@
                         {
-                            <option value="@i.BANK_ID">@i.ACCOUNT_NAME - @i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME</option>
+                            <option value="@i.BANK_ID">@i.ACCOUNT_NAME</option>
                         }
                     }
                 </select>

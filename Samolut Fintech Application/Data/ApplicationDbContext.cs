@@ -23,8 +23,7 @@ namespace Samolut_Fintech_Application.Data
         public DbSet<Role> Role { get; set; } 
         public DbSet<BankAccounts> BankAccounts { get; set; }
         public DbSet<CurrencyAccounts> CurrencyAccounts { get; set; }
-        
-
+        public DbSet<SuspiciousTransaction> SuspiciousTransaction { get; set; }
 
 
     }

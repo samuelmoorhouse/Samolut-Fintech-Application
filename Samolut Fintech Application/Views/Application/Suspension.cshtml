@@ -1,0 +1,18 @@
+@model Samolut_Fintech_Application.Models.DatabaseModels.SuspiciousTransaction
+<body>
+    
+<div class="loginSpace">
+    <div class="phoneLogin">
+        <p class="welcomeText">Account temporarily under review due to a suspicious transaction. This has been sent to administrators for review already.</p>
+        <p class="welocomeText2">Add a reason for the transaction under review below.</p>
+        
+    </div>
+</div>
+</body>
+@* for all my asp validation stuff to actually show up in the form*@
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

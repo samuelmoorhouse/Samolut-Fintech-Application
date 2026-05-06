@@ -22,6 +22,8 @@ namespace Samolut_Fintech_Application.Models.Transfers
         //added this so i can check if they have enough funds
         public double ORIGINAL_AMOUNT { get; set; }
         
+        public double SENDER_GBP_EXCHANGE_RATE { get; set; }
+        
         
         //this stuff gets calculated so isnt required until its calculated. added ? so can be null
         

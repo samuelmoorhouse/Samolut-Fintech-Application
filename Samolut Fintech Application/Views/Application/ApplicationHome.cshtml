@@ -11,84 +11,90 @@
 
 </style>
 <body>
-    <div class="mainAppSpace">
-        <div class="applicationBox">
-            <div class="currentSelectedAccountBox">
-                @* select account id is  i know what account is selected so i can then display whatever else *@
-                <div class="accountSelectedBox">
-                    <h1>@ViewBag.ACCOUNT_BALANCE</h1>
-                    <h2>@ViewBag.COUNTRY_CURRENCY_NAME</h2>
-                </div>
-                <form class="accountSelectionHome" asp-action="ApplicationHome" method="get"> @*get not posttt*@
-                    <h2 class="welcomeMessage">Welcome back @ViewBag.CustomerName!</h2>
-                    @Html.AntiForgeryToken()
-                    <select class="accountsHomeSelect" name="AccountForm">
-                        <option id="options">Select Currency Account:</option>
-                        @{
-                            foreach (var i in Model)
-                            {
-                                <option  id="options" value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME - @i.ACCOUNT_BALANCE</option>
+<div class="mainAppSpace">
+    <div class="applicationBox">
+        <div class="currentSelectedAccountBox">
+            @* select account id is  i know what account is selected so i can then display whatever else *@
+            <div class="accountSelectedBox">
+                <h1>@ViewBag.ACCOUNT_BALANCE</h1>
+                <h2>@ViewBag.COUNTRY_CURRENCY_NAME</h2>
+            </div>
+            <form class="accountSelectionHome" asp-action="ApplicationHome" method="get"> @*get not posttt*@
+                <h2 class="welcomeMessage">Welcome back @ViewBag.CustomerName!</h2>
+                @Html.AntiForgeryToken()
+                <select class="accountsHomeSelect" name="AccountForm">
+                    <option id="options">Select Currency Account:</option>
+                    @{
+                        foreach (var i in Model)
+                        {
+                            <option  id="options" value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME - @i.ACCOUNT_BALANCE</option>
+
+                        }
+                    }
+                </select>
+                <button type="submit">Change Account</button>
+            </form>
+        </div>
+
+        <div class="HistoryBox">
+            <h3>History</h3>
+            @*for transactions to be displayed only if somethings selecte, so chgecking it againsta a viewbag i used above*@
+            @{
+                //for welcome messge
+                if (ViewBag.WelcomeMessage != null)
+                {
+                    <span>@ViewBag.WelcomeMessage</span>
+                }
+                    
+                if (ViewBag.defaultSelectedTransactions != null)
+                {
+                    <div class="transactionTableBox">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Sender</th>
+                                <th>Receiver</th>
+                                <th>Date</th>
+                                <th>Start Currency</th> 
+                                <th>End Currency</th>
+                                <th>Exchange Rate</th>
+                                <th>Amount</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @{
+                                if (ViewBag.defaultSelectedTransactions != null)
+                                {
+                                    foreach (var i in ViewBag.defaultSelectedTransactions)
+                                    {
+                                        <tr>
+                                            <td>@i.SENDER_ACCOUNT_ID</td>
+                                            <td>@i.RECEIVER_ACCOUNT_ID</td>
+                                                    
+                                            <td>@i.TRANSACTION_TIME</td>
+                                            <td>@i.START_CURRENCY</td>
+                                            <td>@i.END_CURRENCY</td>
+                                            <td>@i.EXCHANGE_RATE</td>
+                                            <td>@i.AMOUNT</td>
+                                        </tr>
+                                    }
+                                }
 
                             }
-                        }
-                    </select>
-                    <button type="submit">Change Account</button>
-                </form>
-            </div>
-
-            <div class="HistoryBox">
-            <h3>History</h3>
-                @*for transactions to be displayed only if somethings selecte, so chgecking it againsta a viewbag i used above*@
-                @{
-                    //for welcome messge
-                    if (ViewBag.WelcomeMessage != null)
-                    {
-                        <span>@ViewBag.WelcomeMessage</span>
-                    }
-                    
-                    if (ViewBag.defaultSelectedTransactions != null)
-                    {
-                        <div class="transactionTableBox">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Sender</th>
-                                        <th>Receiver</th>
-                                        <th>Date</th>
-                                        <th>Start Currency</th> 
-                                        <th>End Currency</th>
-                                        <th>Exchange Rate</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @{
-                                        if (ViewBag.defaultSelectedTransactions != null)
-                                        {
-                                            foreach (var i in ViewBag.defaultSelectedTransactions)
-                                            {
-                                                <tr>
-                                                    <td>@i.SENDER_ACCOUNT_ID</td>
-                                                    <td>@i.RECEIVER_ACCOUNT_ID</td>
-                                                    
-                                                    <td>@i.TRANSACTION_TIME</td>
-                                                    <td>@i.START_CURRENCY</td>
-                                                    <td>@i.END_CURRENCY</td>
-                                                    <td>@i.EXCHANGE_RATE</td>
-                                                    <td>@i.AMOUNT</td>
-                                                </tr>
-                                            }
-                                        }
-
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    }
-            </div>
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+        </div>
                 
            
-        </div>
     </div>
+</div>
 </body>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
