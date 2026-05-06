@@ -5,7 +5,8 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
     [Table("Customer")]
 
     public class Customer
-    {
+    {   
+        
         [Key] //make c sharp know its the primary key
         public int CUSTOMER_ID { get; set; }
         [Required]

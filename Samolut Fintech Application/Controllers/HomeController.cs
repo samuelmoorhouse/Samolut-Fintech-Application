@@ -146,7 +146,7 @@ namespace Samolut_Fintech_Application.Controllers
 
             
             
-            return View("Activity");
+            return RedirectToAction("Activity");
         }
         
         [HttpPost]
@@ -177,12 +177,15 @@ namespace Samolut_Fintech_Application.Controllers
             
             
             customer.SUSPENDED = 2; //0 is fine 1 is suspoended a nd 2 baned
-            
             _context.Customer.Update(customer);
             await _context.SaveChangesAsync();
             
+            //delete suspicous transaction
+            _context.SuspiciousTransaction.Remove(suspendedTransaction);
+            await _context.SaveChangesAsync();
             
-            return View();
+            
+            return RedirectToAction("Activity");
         }
 
 
@@ -196,6 +199,18 @@ namespace Samolut_Fintech_Application.Controllers
         public Application(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<IActionResult> BannedAccount()
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            return View();
         }
 
         public IActionResult LogOut()
@@ -242,10 +257,10 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
-            } //else if (suspended == 2)
-            //{
-            //    return RedirectToAction("Banned", "Application");
-            //}
+            }  if (suspended == 2)
+            {
+               return RedirectToAction("BannedAccount", "Application");
+            }
             
             
             
@@ -309,6 +324,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
 
             return View();
@@ -334,6 +352,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
 
             return View();
@@ -356,6 +377,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
             
             
@@ -395,6 +419,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
             
             
@@ -522,6 +549,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
             
             
@@ -583,6 +613,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
             
             
@@ -741,6 +774,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
             
             
@@ -788,6 +824,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
             
             
@@ -818,6 +857,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
             
             
@@ -888,6 +930,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
             
             
@@ -932,6 +977,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
             
             
@@ -956,6 +1004,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
             
             
@@ -995,6 +1046,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
             
             
@@ -1070,6 +1124,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
             
             
@@ -1107,6 +1164,9 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
             
             

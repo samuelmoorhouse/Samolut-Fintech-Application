@@ -1,5 +1,5 @@
 ﻿@model IEnumerable<Samolut_Fintech_Application.Models.DatabaseModels.Account>
-
+@*make navbar glow on roght page*@
 <style>
     #Home {
         background-color: rgba(98, 204, 141, 0.5);
@@ -8,8 +8,8 @@
         #Home:hover {
             background-color: rgba(255, 255, 255, 0.5);
         }
-
 </style>
+
 <body>
 <div class="mainAppSpace">
     <div class="applicationBox">
@@ -23,7 +23,7 @@
                 <h2 class="welcomeMessage">Welcome back @ViewBag.CustomerName!</h2>
                 @Html.AntiForgeryToken()
                 <select class="accountsHomeSelect" name="AccountForm">
-                    <option id="options">Select Currency Account:</option>
+                    <option id="options">Select Different Currency Account:</option>
                     @{
                         foreach (var i in Model)
                         {

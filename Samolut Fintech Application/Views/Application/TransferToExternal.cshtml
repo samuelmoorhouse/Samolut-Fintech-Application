@@ -1,4 +1,15 @@
 @model Samolut_Fintech_Application.Models.Transfers.ExternalTransferModel
+@*make navbar glow on roght page*@
+<style>
+    #Payments {
+        background-color: rgba(98, 204, 141, 0.5);
+    }
+
+        #Payments:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+</style>
+
 <body>
     <div class="topDisplay">
         <h2>Samolut Payments</h2>
@@ -6,11 +17,7 @@
 
     <div class="mainAppSpace">
         <div class="applicationBox">
-            <div class="paymentTypeButtons">
-                <a asp-action="TransferToExternal">Transfer To External Accounts (other peoples samolut accounts)</a>
-                <a asp-action="TransferBankToCurrency">Transfer Money From Your Bank Accounts To Your Currency Accounts</a>
-                <a asp-action="TransferInternalCurrency">Transfer Between Your Currency Accounts</a>
-            </div>
+            
             
             @* learnt tht these are razor comments and they can be used anywhere and dont show on inspect element*@
             
