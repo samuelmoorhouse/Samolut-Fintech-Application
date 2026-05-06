@@ -23,7 +23,7 @@ public class SuspiciousTransaction
     public DateTime TRANSACTION_TIME { get; set; }
     
     //added reason to transaction for suspicion
-    public string SUSPENDED_TRANSACTION_REASON { get; set; }
+    public string? SUSPENDED_TRANSACTION_REASON { get; set; }
     
     
     

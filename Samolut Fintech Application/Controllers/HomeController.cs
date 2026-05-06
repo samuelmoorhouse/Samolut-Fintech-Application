@@ -62,6 +62,42 @@ namespace Samolut_Fintech_Application.Controllers
         {
             _context = context;
         }
+        
+        //main admin page for reviewing activity
+        public async Task<IActionResult> Activity()
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            // if admin take to admin page, always user id 1
+
+            if (userId != 1)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            //get all suspicous transactions to display for admin
+            var suspisiousTransactions = await _context.SuspiciousTransaction.ToListAsync();
+             ViewBag.SuspisiousTransactions = suspisiousTransactions;
+            
+            return View();
+            
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Activity(SuspiciousTransaction data)
+        {
+            //get all suspicous transactions
+            
+            
+            
+            return View();
+        }
 
         //to view the customers
         public async Task<IActionResult> ViewCustomers()
@@ -110,6 +146,14 @@ namespace Samolut_Fintech_Application.Controllers
             }
 
             int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            // if admin take to admin page, always user id 1
+
+            if (userId == 1)
+            {
+                return RedirectToAction("Activity", "Admin");
+            }
+            
             
             //check if accounts suspended or banned on every page
             var suspended = await _context.Customer
@@ -543,7 +587,7 @@ namespace Samolut_Fintech_Application.Controllers
                         _context.SuspiciousTransaction.Add(suspendedData);
                         await _context.SaveChangesAsync();
                         
-                        return RedirectToAction("Suspension", "Application", suspendedData);
+                        return RedirectToAction("Suspension", "Application");
                             
                     } 
                 }
@@ -1024,7 +1068,7 @@ namespace Samolut_Fintech_Application.Controllers
 
 
 
-        public async Task<IActionResult> Suspension(SuspiciousTransaction data)
+        public async Task<IActionResult> Suspension()
         {
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
@@ -1032,9 +1076,64 @@ namespace Samolut_Fintech_Application.Controllers
             }
             int? userId = HttpContext.Session.GetInt32("UserId");
             
+            //some details of the suspention
+            var suspentionData = await _context.SuspiciousTransaction
+                .Include(i=>i.SenderAccountIdForeignKey)
+                .Where(i => i.SenderAccountIdForeignKey.CUSTOMER_ID == userId).FirstOrDefaultAsync();
+            var reciverID = await _context.SuspiciousTransaction
+                .Include(i => i.ReceiverAccountIdForeignKey)
+                .Where(i => i.SUSPENDED_TRANSACTION_ID == suspentionData.SUSPENDED_TRANSACTION_ID)
+                .Where(i => i.RECEIVER_ACCOUNT_ID == suspentionData.RECEIVER_ACCOUNT_ID)
+                .Select(i => i.SenderAccountIdForeignKey.CUSTOMER_ID).FirstOrDefaultAsync();
+            var reciver = await  _context.Customer.Where(i => i.CUSTOMER_ID == userId).FirstOrDefaultAsync();
+            var receiverName = reciver.FIRST_NAME + " " +reciver.LAST_NAME;
+            
+            ViewBag.Reason =  suspentionData.SUSPENDED_TRANSACTION_REASON;
+            ViewBag.Time = suspentionData.TRANSACTION_TIME;
+            ViewBag.Amount = suspentionData.AMOUNT;
+            ViewBag.endCurrency =  suspentionData.END_CURRENCY;
+            ViewBag.sentTo = receiverName;
+            
+            return View();
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Suspension(suspendedReasonModel data)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //stuff from before post
+            var suspentionData = await _context.SuspiciousTransaction
+                .Include(i=>i.SenderAccountIdForeignKey)
+                .Where(i => i.SenderAccountIdForeignKey.CUSTOMER_ID == userId).FirstOrDefaultAsync();
+            var reciverID = await _context.SuspiciousTransaction
+                .Include(i => i.ReceiverAccountIdForeignKey)
+                .Where(i => i.SUSPENDED_TRANSACTION_ID == suspentionData.SUSPENDED_TRANSACTION_ID)
+                .Where(i => i.RECEIVER_ACCOUNT_ID == suspentionData.RECEIVER_ACCOUNT_ID)
+                .Select(i => i.SenderAccountIdForeignKey.CUSTOMER_ID).FirstOrDefaultAsync();
+            var reciver = await  _context.Customer.Where(i => i.CUSTOMER_ID == userId).FirstOrDefaultAsync();
+            var receiverName = reciver.FIRST_NAME + " " +reciver.LAST_NAME;
+            
+            ViewBag.Reason =  suspentionData.SUSPENDED_TRANSACTION_REASON;
+            ViewBag.Time = suspentionData.TRANSACTION_TIME;
+            ViewBag.Amount = suspentionData.AMOUNT;
+            ViewBag.endCurrency =  suspentionData.END_CURRENCY;
+            ViewBag.sentTo = receiverName;
+            // -------------------------
             
             
-            return View(data);
+            var reason = data.SUSPENDED_TRANSACTION_REASON;
+            
+            suspentionData.SUSPENDED_TRANSACTION_REASON = reason;
+            _context.SuspiciousTransaction.Update(suspentionData);
+            await _context.SaveChangesAsync();
+            
+            return View();
         }
 
     }
