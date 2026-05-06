@@ -15,12 +15,12 @@ namespace Samolut_Fintech_Application.Models.Transfers
         [Required]
         public int RECEIVER_ACCOUNT_ID { get; set; }
         [Required]
-        //max like 1 million transfer
-        [Range(0,1000000)]
         public double AMOUNT { get; set; }
         
         //added this so i can check if they have enough funds
         public double ORIGINAL_AMOUNT { get; set; }
+        
+        public double SENDER_GBP_EXCHANGE_RATE { get; set; }
         
         
         //this stuff gets calculated so isnt required until its calculated. added ? so can be null

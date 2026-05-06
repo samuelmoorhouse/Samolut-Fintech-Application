@@ -1,24 +1,32 @@
 @model Samolut_Fintech_Application.Models.Transfers.InternalCurrencyModel
 <body>
-    <div class="topDisplay">
-        <h2>Samolut Payments</h2>
-    </div>
+<div class="topDisplay">
+    <h2>Samolut Payments</h2>
+</div>
 
-    <a>Amount to be Sent: @ViewBag.SenderAccountSymbol@Model.ORIGINAL_AMOUNT @ViewBag.SenderAccountName </a>
-    <a>Exchange rate (@ViewBag.SenderAccountName to @ViewBag.ReceiverAccountName): @Model.EXCHANGE_RATE</a>
-    <a>Amount to be Received in Native Currency: @ViewBag.ReceiverAccountSymbol@Model.AMOUNT @ViewBag.ReceiverAccountName</a>
+<a>Amount to be Sent: @ViewBag.SenderAccountSymbol@Model.ORIGINAL_AMOUNT @ViewBag.SenderAccountName </a>
+<a>Exchange rate (@ViewBag.SenderAccountName to @ViewBag.ReceiverAccountName): @Model.EXCHANGE_RATE</a>
+<a>Amount to be Received in Native Currency: @ViewBag.ReceiverAccountSymbol@Model.AMOUNT @ViewBag.ReceiverAccountName</a>
 
-    <form asp-action="ConfirmTransfer" method="post">
-        <button name="calculateButton" class="SendMoneySubmit" type="submit">Confirm and Send</button>
-        @*to transfer all that data again to the actual transfer code, already in model so dont need to add value*@
-        <input type="hidden" asp-for="ORIGINAL_AMOUNT" />
-        <input type="hidden" asp-for="SENDER_ACCOUNT_ID" />
-        <input type="hidden" asp-for="RECEIVER_ACCOUNT_ID" />
-        <input type="hidden" asp-for="AMOUNT" /> 
-        <input type="hidden" asp-for="EXCHANGE_RATE" />
-        <input type="hidden" asp-for="START_CURRENCY" />
-        <input type="hidden" asp-for="END_CURRENCY" />
-        <span class="errorMessages">@ViewBag.ErrorMessage</span>
-    </form>
+<form asp-action="ConfirmTransfer" method="post">
+    <button name="calculateButton" class="SendMoneySubmit" type="submit">Confirm and Send</button>
+    @*to transfer all that data again to the actual transfer code, already in model so dont need to add value*@
+    <input type="hidden" asp-for="ORIGINAL_AMOUNT"/>
+    <input type="hidden" asp-for="SENDER_ACCOUNT_ID"/>
+    <input type="hidden" asp-for="RECEIVER_ACCOUNT_ID"/>
+    <input type="hidden" asp-for="AMOUNT"/> 
+    <input type="hidden" asp-for="EXCHANGE_RATE"/>
+    <input type="hidden" asp-for="START_CURRENCY"/>
+    <input type="hidden" asp-for="END_CURRENCY"/>
+    <input type="hidden" asp-for="SENDER_GBP_EXCHANGE_RATE"/>
+    <input type="hidden" asp-for="ORIGINAL_AMOUNT"/>
+    <span class="errorMessages">@ViewBag.ErrorMessage</span>
+</form>
     
 </body>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

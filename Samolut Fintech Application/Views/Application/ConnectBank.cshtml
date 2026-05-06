@@ -1,4 +1,15 @@
 @model Samolut_Fintech_Application.Models.Transfers.AddBankModel
+@*make navbar glow on roght page*@
+<style>
+    #Add {
+        background-color: rgba(98, 204, 141, 0.5);
+    }
+
+        #Add:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+</style>
+
 <body>
 <div class="topDisplay">
     <h2>Samolut Payments</h2>
@@ -23,7 +34,7 @@
                     @{
                         foreach(var i in ViewBag.bankAccounts) @*so recipients instead of just accounts*@
                         {
-                            <option value="@i.BANK_ID">@i.ACCOUNT_NAME - @i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME</option>
+                            <option value="@i.BANK_ID">@i.ACCOUNT_NAME</option>
                         }
                     }
                 </select>

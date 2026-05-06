@@ -19,9 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Application\AddPage\" />
-    <Folder Include="Views\Application\HomePage\" />
-    <Folder Include="Views\Application\PaymentsPage\" />
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 

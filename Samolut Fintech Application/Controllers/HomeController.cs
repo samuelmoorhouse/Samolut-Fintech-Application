@@ -62,13 +62,132 @@ namespace Samolut_Fintech_Application.Controllers
         {
             _context = context;
         }
-
-        //to view the customers
-        public async Task<IActionResult> ViewCustomers()
+        
+        //main admin page for reviewing activity
+        public async Task<IActionResult> Activity()
         {
-            var customers = await _context.Customer.ToListAsync();
-            return View(customers);
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            // if admin take to admin page, always user id 1
+
+            if (userId != 1)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            //get all suspicous transactions to display for admin
+            var suspisiousTransactions = await _context.SuspiciousTransaction.ToListAsync();
+             ViewBag.SuspisiousTransactions = suspisiousTransactions;
+            
+            return View();
+            
         }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnSuspend(SuspiciousTransaction data)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            if (userId != 1)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            //remalking the transaction and make it go through
+            var suspendedTransaction = _context.SuspiciousTransaction.Where(i=>i.SUSPENDED_TRANSACTION_ID == data.SUSPENDED_TRANSACTION_ID).FirstOrDefault();
+            var unSuspendedTransaction = new Transaction
+            {
+                SENDER_ACCOUNT_ID = suspendedTransaction.SENDER_ACCOUNT_ID,
+                RECEIVER_ACCOUNT_ID = suspendedTransaction.RECEIVER_ACCOUNT_ID,
+                AMOUNT = suspendedTransaction.AMOUNT,
+                EXCHANGE_RATE = suspendedTransaction.EXCHANGE_RATE,
+                START_CURRENCY = suspendedTransaction.START_CURRENCY,
+                END_CURRENCY = suspendedTransaction.END_CURRENCY,
+                TRANSACTION_TIME = DateTime.Now
+            };
+            
+            _context.Transaction.Add(unSuspendedTransaction);
+            
+            //make balances change, taken friom confirm changes
+            
+            var SenderAccount = await _context.Account.Where(i=>i.ACCOUNT_ID == suspendedTransaction.SENDER_ACCOUNT_ID).FirstOrDefaultAsync();
+            var ReceiverAccount = await _context.Account.Where(i=>i.ACCOUNT_ID == suspendedTransaction.RECEIVER_ACCOUNT_ID).FirstOrDefaultAsync();
+            SenderAccount.ACCOUNT_BALANCE -= suspendedTransaction.ORIGINAL_AMOUNT; //so take away gbp and then below add jpy cause i accidentally subtracted thiusands from gbp
+            ReceiverAccount.ACCOUNT_BALANCE += data.AMOUNT;
+            
+            
+            //make user un suspended
+            var accountID = suspendedTransaction.SENDER_ACCOUNT_ID;
+            var customerID = await _context.SuspiciousTransaction
+                .Include(i=>i.SenderAccountIdForeignKey)
+                .Where(i=>i.SENDER_ACCOUNT_ID == accountID)
+                .Select(i=>i.SenderAccountIdForeignKey.CUSTOMER_ID).FirstOrDefaultAsync();
+            var customer = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == customerID).FirstOrDefaultAsync();
+            customer.SUSPENDED = 0;
+            
+            _context.Customer.Update(customer);
+            await _context.SaveChangesAsync();
+            
+            //delete suspicous transaction as it been added back to normla transaction
+            _context.SuspiciousTransaction.Remove(suspendedTransaction);
+            await _context.SaveChangesAsync();
+
+            
+            
+            return RedirectToAction("Activity");
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BanAccount(SuspiciousTransaction data)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            if (userId != 1)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            //ban customer from theere transaction
+            var suspendedTransaction = _context.SuspiciousTransaction.Where(i=>i.SUSPENDED_TRANSACTION_ID == data.SUSPENDED_TRANSACTION_ID).FirstOrDefault();
+            var accountID = suspendedTransaction.SENDER_ACCOUNT_ID;
+            var customerID = await _context.SuspiciousTransaction
+                .Include(i=>i.SenderAccountIdForeignKey)
+                .Where(i=>i.SENDER_ACCOUNT_ID == accountID)
+                .Select(i=>i.SenderAccountIdForeignKey.CUSTOMER_ID).FirstOrDefaultAsync();
+            var customer = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == customerID).FirstOrDefaultAsync();
+            
+            
+            customer.SUSPENDED = 2; //0 is fine 1 is suspoended a nd 2 baned
+            _context.Customer.Update(customer);
+            await _context.SaveChangesAsync();
+            
+            //delete suspicous transaction
+            _context.SuspiciousTransaction.Remove(suspendedTransaction);
+            await _context.SaveChangesAsync();
+            
+            
+            return RedirectToAction("Activity");
+        }
+
 
     }
 
@@ -82,9 +201,35 @@ namespace Samolut_Fintech_Application.Controllers
             _context = context;
         }
 
+        public async Task<IActionResult> BannedAccount()
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            return View();
+        }
 
-       
-        
+        public IActionResult LogOut()
+        {
+            //log them out
+            HttpContext.Session.Remove("UserId");
+            
+            //check
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            return View();
+
+        }
+
+
+
         //all home page stuff
 
         public async Task<IActionResult> ApplicationHome()
@@ -97,6 +242,29 @@ namespace Samolut_Fintech_Application.Controllers
 
             int? userId = HttpContext.Session.GetInt32("UserId");
             
+            // if admin take to admin page, always user id 1
+
+            if (userId == 1)
+            {
+                return RedirectToAction("Activity", "Admin");
+            }
+            
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            }  if (suspended == 2)
+            {
+               return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
+            
+            
             //start every account on a likle default gbp, this will be made on sign up.
             
             int DefaultAccount = 1;
@@ -104,7 +272,7 @@ namespace Samolut_Fintech_Application.Controllers
                 .Include(i => i.CurrencyIdForeignKey)
                 .Include(i=>i.AccountTypeIdForeignKey)
                 .Where(i => i.CUSTOMER_ID == userId)
-                .Where(i=>i.ACCOUNT_ID == 1).FirstOrDefaultAsync();
+                .Where(i=>i.CurrencyIdForeignKey.COUNTRY_CURRENCY_ID == 1).FirstOrDefaultAsync(); //as gbp is always made first
             
             
             //default account stuff
@@ -130,7 +298,8 @@ namespace Samolut_Fintech_Application.Controllers
                 .Include(i =>
                     i.SenderAccountIdForeignKey) //include the foreign keys so i know the details of each accoujnt
                 .Include(i => i.ReceiverAccountIdForeignKey)
-                .Where(i => i.SENDER_ACCOUNT_ID == 1 || i.RECEIVER_ACCOUNT_ID == 1).ToListAsync();
+                .Where(i => i.SENDER_ACCOUNT_ID == 1 || i.RECEIVER_ACCOUNT_ID == 1)
+                .Where(i=>i.SenderAccountIdForeignKey.CUSTOMER_ID == userId || i.ReceiverAccountIdForeignKey.CUSTOMER_ID == userId).ToListAsync();
                 //the || means or
 
             ViewBag.defaultSelectedTransactions = defaultSelectedTransactions;
@@ -145,6 +314,19 @@ namespace Samolut_Fintech_Application.Controllers
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
             return RedirectToAction("Login", "Account");
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
             }
 
             return View();
@@ -162,6 +344,18 @@ namespace Samolut_Fintech_Application.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
 
             return View();
         }
@@ -175,6 +369,22 @@ namespace Samolut_Fintech_Application.Controllers
             }
 
             int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
+            
+            
             var countryCurrencies = await _context.CurrentCurrency.ToListAsync();
 
 
@@ -201,6 +411,21 @@ namespace Samolut_Fintech_Application.Controllers
             }
 
             int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
+            
 
             if (ModelState.IsValid)
             {
@@ -280,6 +505,8 @@ namespace Samolut_Fintech_Application.Controllers
                 
                 
                 
+                
+                
                 return RedirectToAction("ConfirmTransfer", new
                 {
                     senderID = data.SENDER_ACCOUNT_ID,
@@ -288,7 +515,8 @@ namespace Samolut_Fintech_Application.Controllers
                     currencyAmount = NewCurrencyAmount, //new amount just made
                     exchangeRate = ExchangeRate,
                     startcurrencyID = SenderCurrencyID,
-                    endcurrencyID = ReciverCurrencyID
+                    endcurrencyID = ReciverCurrencyID,
+                    SenderGBPRate
                     
                 });
                 
@@ -305,7 +533,7 @@ namespace Samolut_Fintech_Application.Controllers
         
         
         //this is for after calculation and to confirm before transaction
-        public async Task<IActionResult> ConfirmTransfer(double beforeAmount, int senderID, int receiverID, double exchangeRate, double currencyAmount, int startcurrencyID, int  endcurrencyID)
+        public async Task<IActionResult> ConfirmTransfer(double beforeAmount, int senderID, int receiverID, double exchangeRate, double currencyAmount, int startcurrencyID, int  endcurrencyID, double SenderGBPRate)
         {
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
@@ -313,6 +541,22 @@ namespace Samolut_Fintech_Application.Controllers
                 
             }
             int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
+            
+            
             
             var data = new InternalCurrencyModel
             {
@@ -322,7 +566,8 @@ namespace Samolut_Fintech_Application.Controllers
                 AMOUNT = currencyAmount,
                 EXCHANGE_RATE = exchangeRate,
                 START_CURRENCY = startcurrencyID,
-                END_CURRENCY = endcurrencyID
+                END_CURRENCY = endcurrencyID,
+                SENDER_GBP_EXCHANGE_RATE = SenderGBPRate,
                 
             };
             
@@ -361,6 +606,20 @@ namespace Samolut_Fintech_Application.Controllers
             }
             int? userId = HttpContext.Session.GetInt32("UserId");
             
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
+            
             //same validation as above for initial calculation
             if (ModelState.IsValid)
             {
@@ -395,9 +654,6 @@ namespace Samolut_Fintech_Application.Controllers
                     return View("TransferInternalCurrency", data);
                 }
                 
-                //calculate exchange rate, so get sender and receiver and calculate it against the uks one
-                //ill store all the rates to gbp
-                // formula is sender gbp rate / receiver gbp rate
                 var SenderCurrencyID = await _context.Account
                     .Include(i => i.CurrencyIdForeignKey)
                     .Where(i => i.ACCOUNT_ID == data.SENDER_ACCOUNT_ID)
@@ -407,6 +663,50 @@ namespace Samolut_Fintech_Application.Controllers
                     .Include(i => i.CurrencyIdForeignKey)
                     .Where(i => i.ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID)
                     .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
+                
+                
+                //check suspicion before going ahead
+                
+                //for the suspicion validation
+                
+                var GBPAmount = data.ORIGINAL_AMOUNT* data.SENDER_GBP_EXCHANGE_RATE; 
+                var Customer = await _context.Customer
+                    .Where(i => i.CUSTOMER_ID == userId)
+                    .Select(i=>i.CUSTOMER_ID).FirstOrDefaultAsync();
+                var ReceiversCustomer = await _context.Account
+                    .Where(i => i.ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID)
+                    .Select(i => i.CUSTOMER_ID).FirstOrDefaultAsync();
+                //so if its external then for suspicous check otherwise just go with transaction
+                if (Customer != ReceiversCustomer)
+                {
+                    if (GBPAmount > 10000)// so suspicous if a single transaction is above 10000
+                    {   
+                        var suspicusCustomer = await _context.Customer
+                            .Where(i => i.CUSTOMER_ID == userId).FirstOrDefaultAsync();
+                        suspicusCustomer.SUSPENDED = 1;
+                        _context.Customer.Update(suspicusCustomer);
+                        
+                        var suspendedData = new SuspiciousTransaction
+                        {
+                            SENDER_ACCOUNT_ID = data.SENDER_ACCOUNT_ID,
+                            RECEIVER_ACCOUNT_ID = data.RECEIVER_ACCOUNT_ID,
+                            AMOUNT = data.AMOUNT,
+                            EXCHANGE_RATE = data.EXCHANGE_RATE,
+                            START_CURRENCY = SenderCurrencyID,
+                            END_CURRENCY = ReciverCurrencyID,
+                            ORIGINAL_AMOUNT = data.ORIGINAL_AMOUNT,
+                            TRANSACTION_TIME = DateTime.Now,
+                            
+                        };
+                        _context.SuspiciousTransaction.Add(suspendedData);
+                        await _context.SaveChangesAsync();
+                        
+                        return RedirectToAction("Suspension", "Application");
+                            
+                    } 
+                }
+                
+                
                 
                 //changing accounts balance then addin a trnsaction to table
                 
@@ -466,6 +766,24 @@ namespace Samolut_Fintech_Application.Controllers
             }
 
             int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
+            
+            
+            
+            
             var countryCurrencies = await _context.CurrentCurrency.ToListAsync();
 
 
@@ -499,6 +817,24 @@ namespace Samolut_Fintech_Application.Controllers
             }
             int? userId = HttpContext.Session.GetInt32("UserId");
             
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
+            
+            
+            
+            
+            
             return View();
                 
         }
@@ -514,6 +850,20 @@ namespace Samolut_Fintech_Application.Controllers
                 }
             int? userId = HttpContext.Session.GetInt32("UserId");
 
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
+            
             if (ModelState.IsValid)
             {   
                 //see if theres matcvhing account
@@ -573,6 +923,21 @@ namespace Samolut_Fintech_Application.Controllers
             }
             int? userId = HttpContext.Session.GetInt32("UserId");
             
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
+            
+            
             var accounts = await _context.Account
                 .Include(i => i.CurrencyIdForeignKey) //added a  foreign key in my db, so i can read off trhe currency names as i made it to be 3nf so its in seperate table
                 .Where(i => i.CUSTOMER_ID == userId)
@@ -597,7 +962,7 @@ namespace Samolut_Fintech_Application.Controllers
         
         
         //All Addd money page stuff -------------------------
-        public IActionResult Add()
+        public async Task<IActionResult> Add()
         {
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
@@ -605,7 +970,20 @@ namespace Samolut_Fintech_Application.Controllers
             }
             int? userId = HttpContext.Session.GetInt32("UserId");
 
-
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
+            
 
             return View();
         }
@@ -618,6 +996,20 @@ namespace Samolut_Fintech_Application.Controllers
                 return RedirectToAction("Login", "Account");
             }
             int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
 
             var bankAccounts = await _context.BankAccounts
                 .Include(i => i.CurrencyIdForeignKey)
@@ -646,6 +1038,22 @@ namespace Samolut_Fintech_Application.Controllers
                 return RedirectToAction("Login", "Account");
             }
             int userId = HttpContext.Session.GetInt32("UserId").Value; //used . value to get exact value so i can put in sql
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
+            
+            
             
             //depending on what bank ill choose how much mioney is in
             // ill make it random but banks differ
@@ -709,6 +1117,20 @@ namespace Samolut_Fintech_Application.Controllers
             }
             int? userId = HttpContext.Session.GetInt32("UserId");
 
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
+            
             //exact same as add bank but for add currency and the currencies thy already have
             var currencyAccounts = await _context.CurrencyAccounts
                 .Include(i => i.CurrencyIdForeignKey)
@@ -734,6 +1156,21 @@ namespace Samolut_Fintech_Application.Controllers
                 return RedirectToAction("Login", "Account");
             }
             int userId = HttpContext.Session.GetInt32("UserId").Value; //used . value to get exact value so i can put in sql
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } else if (suspended == 2)
+            {
+                return RedirectToAction("BannedAccount", "Application");
+            }
+            
+            
+            
             
             //same code to add currency to bank without adding a balance.
             if (ModelState.IsValid)
@@ -767,6 +1204,76 @@ namespace Samolut_Fintech_Application.Controllers
                 .ToListAsync();
             ViewBag.bankAccounts = bankAccounts;
             ViewBag.ErrorMessage = "Invalid Input!";
+            return View();
+        }
+
+
+
+        public async Task<IActionResult> Suspension()
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //some details of the suspention
+            var suspentionData = await _context.SuspiciousTransaction
+                .Include(i=>i.SenderAccountIdForeignKey)
+                .Where(i => i.SenderAccountIdForeignKey.CUSTOMER_ID == userId).FirstOrDefaultAsync();
+            var reciverID = await _context.SuspiciousTransaction
+                .Include(i => i.ReceiverAccountIdForeignKey)
+                .Where(i => i.SUSPENDED_TRANSACTION_ID == suspentionData.SUSPENDED_TRANSACTION_ID)
+                .Where(i => i.RECEIVER_ACCOUNT_ID == suspentionData.RECEIVER_ACCOUNT_ID)
+                .Select(i => i.SenderAccountIdForeignKey.CUSTOMER_ID).FirstOrDefaultAsync();
+            var reciver = await  _context.Customer.Where(i => i.CUSTOMER_ID == userId).FirstOrDefaultAsync();
+            var receiverName = reciver.FIRST_NAME + " " +reciver.LAST_NAME;
+            
+            ViewBag.Reason =  suspentionData.SUSPENDED_TRANSACTION_REASON;
+            ViewBag.Time = suspentionData.TRANSACTION_TIME;
+            ViewBag.Amount = suspentionData.AMOUNT;
+            ViewBag.endCurrency =  suspentionData.END_CURRENCY;
+            ViewBag.sentTo = receiverName;
+            
+            return View();
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Suspension(suspendedReasonModel data)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //stuff from before post
+            var suspentionData = await _context.SuspiciousTransaction
+                .Include(i=>i.SenderAccountIdForeignKey)
+                .Where(i => i.SenderAccountIdForeignKey.CUSTOMER_ID == userId).FirstOrDefaultAsync();
+            var reciverID = await _context.SuspiciousTransaction
+                .Include(i => i.ReceiverAccountIdForeignKey)
+                .Where(i => i.SUSPENDED_TRANSACTION_ID == suspentionData.SUSPENDED_TRANSACTION_ID)
+                .Where(i => i.RECEIVER_ACCOUNT_ID == suspentionData.RECEIVER_ACCOUNT_ID)
+                .Select(i => i.SenderAccountIdForeignKey.CUSTOMER_ID).FirstOrDefaultAsync();
+            var reciver = await  _context.Customer.Where(i => i.CUSTOMER_ID == userId).FirstOrDefaultAsync();
+            var receiverName = reciver.FIRST_NAME + " " +reciver.LAST_NAME;
+            
+            ViewBag.Reason =  suspentionData.SUSPENDED_TRANSACTION_REASON;
+            ViewBag.Time = suspentionData.TRANSACTION_TIME;
+            ViewBag.Amount = suspentionData.AMOUNT;
+            ViewBag.endCurrency =  suspentionData.END_CURRENCY;
+            ViewBag.sentTo = receiverName;
+            // -------------------------
+            
+            
+            var reason = data.SUSPENDED_TRANSACTION_REASON;
+            
+            suspentionData.SUSPENDED_TRANSACTION_REASON = reason;
+            _context.SuspiciousTransaction.Update(suspentionData);
+            await _context.SaveChangesAsync();
+            
             return View();
         }
 

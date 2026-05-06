@@ -1,13 +1,30 @@
-﻿<body>
+﻿@*make navbar glow on roght page*@
+<style>
+    #Payments {
+        background-color: rgba(98, 204, 141, 0.5);
+    }
 
-    <div class="mainAppSpace">
-        <div class="applicationBox">
-            <div class="paymentTypeButtons">
-                <a asp-action="ChooseExternal">Transfer To External Accounts (other peoples samolut accounts)</a>
-                <a asp-action="TransferBankToCurrency">Transfer Money From Your Bank Accounts To Your Currency Accounts</a>
-                <a asp-action="TransferInternalCurrency">Transfer Between Your Currency Accounts</a>
-            </div>
+        #Payments:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+</style>
 
+<body>
+
+<div class="mainAppSpace">
+    <div class="applicationBox">
+        <div class="paymentTypeButtons">
+            <a asp-action="ChooseExternal">Transfer To External Accounts (other peoples samolut accounts)</a>
+            <a asp-action="TransferBankToCurrency">Transfer Money From Your Bank Accounts To Your Currency Accounts</a>
+            <a asp-action="TransferInternalCurrency">Transfer Between Your Currency Accounts</a>
         </div>
+
     </div>
+</div>
 </body>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
