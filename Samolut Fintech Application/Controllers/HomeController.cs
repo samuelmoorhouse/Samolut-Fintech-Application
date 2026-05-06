@@ -90,21 +90,101 @@ namespace Samolut_Fintech_Application.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Activity(SuspiciousTransaction data)
+        public async Task<IActionResult> UnSuspend(SuspiciousTransaction data)
         {
-            //get all suspicous transactions
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
             
+            if (userId != 1)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            //remalking the transaction and make it go through
+            var suspendedTransaction = _context.SuspiciousTransaction.Where(i=>i.SUSPENDED_TRANSACTION_ID == data.SUSPENDED_TRANSACTION_ID).FirstOrDefault();
+            var unSuspendedTransaction = new Transaction
+            {
+                SENDER_ACCOUNT_ID = suspendedTransaction.SENDER_ACCOUNT_ID,
+                RECEIVER_ACCOUNT_ID = suspendedTransaction.RECEIVER_ACCOUNT_ID,
+                AMOUNT = suspendedTransaction.AMOUNT,
+                EXCHANGE_RATE = suspendedTransaction.EXCHANGE_RATE,
+                START_CURRENCY = suspendedTransaction.START_CURRENCY,
+                END_CURRENCY = suspendedTransaction.END_CURRENCY,
+                TRANSACTION_TIME = DateTime.Now
+            };
+            
+            _context.Transaction.Add(unSuspendedTransaction);
+            
+            //make balances change, taken friom confirm changes
+            
+            var SenderAccount = await _context.Account.Where(i=>i.ACCOUNT_ID == suspendedTransaction.SENDER_ACCOUNT_ID).FirstOrDefaultAsync();
+            var ReceiverAccount = await _context.Account.Where(i=>i.ACCOUNT_ID == suspendedTransaction.RECEIVER_ACCOUNT_ID).FirstOrDefaultAsync();
+            SenderAccount.ACCOUNT_BALANCE -= suspendedTransaction.ORIGINAL_AMOUNT; //so take away gbp and then below add jpy cause i accidentally subtracted thiusands from gbp
+            ReceiverAccount.ACCOUNT_BALANCE += data.AMOUNT;
+            
+            
+            //make user un suspended
+            var accountID = suspendedTransaction.SENDER_ACCOUNT_ID;
+            var customerID = await _context.SuspiciousTransaction
+                .Include(i=>i.SenderAccountIdForeignKey)
+                .Where(i=>i.SENDER_ACCOUNT_ID == accountID)
+                .Select(i=>i.SenderAccountIdForeignKey.CUSTOMER_ID).FirstOrDefaultAsync();
+            var customer = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == customerID).FirstOrDefaultAsync();
+            customer.SUSPENDED = 0;
+            
+            _context.Customer.Update(customer);
+            await _context.SaveChangesAsync();
+            
+            //delete suspicous transaction as it been added back to normla transaction
+            _context.SuspiciousTransaction.Remove(suspendedTransaction);
+            await _context.SaveChangesAsync();
+
+            
+            
+            return View("Activity");
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BanAccount(SuspiciousTransaction data)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            if (userId != 1)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            //ban customer from theere transaction
+            var suspendedTransaction = _context.SuspiciousTransaction.Where(i=>i.SUSPENDED_TRANSACTION_ID == data.SUSPENDED_TRANSACTION_ID).FirstOrDefault();
+            var accountID = suspendedTransaction.SENDER_ACCOUNT_ID;
+            var customerID = await _context.SuspiciousTransaction
+                .Include(i=>i.SenderAccountIdForeignKey)
+                .Where(i=>i.SENDER_ACCOUNT_ID == accountID)
+                .Select(i=>i.SenderAccountIdForeignKey.CUSTOMER_ID).FirstOrDefaultAsync();
+            var customer = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == customerID).FirstOrDefaultAsync();
+            
+            
+            customer.SUSPENDED = 2; //0 is fine 1 is suspoended a nd 2 baned
+            
+            _context.Customer.Update(customer);
+            await _context.SaveChangesAsync();
             
             
             return View();
         }
 
-        //to view the customers
-        public async Task<IActionResult> ViewCustomers()
-        {
-            var customers = await _context.Customer.ToListAsync();
-            return View(customers);
-        }
 
     }
 
@@ -581,6 +661,7 @@ namespace Samolut_Fintech_Application.Controllers
                             EXCHANGE_RATE = data.EXCHANGE_RATE,
                             START_CURRENCY = SenderCurrencyID,
                             END_CURRENCY = ReciverCurrencyID,
+                            ORIGINAL_AMOUNT = data.ORIGINAL_AMOUNT,
                             TRANSACTION_TIME = DateTime.Now,
                             
                         };
