@@ -4,10 +4,10 @@ namespace Samolut_Fintech_Application.Models.Transfers;
 public class ExternalTransferModel
 {
     //so my customer model plus some transaction data
-    [Required]
+    [Required(ErrorMessage = "Phone number is required.")]
     public string PHONE_NUMBER { get; set; }
     
-    [Required]
+    [Required(ErrorMessage = "Name is required.")]
     public string FULL_NAME { get; set; }
     
     //after the check for passing the id
@@ -25,7 +25,7 @@ public class ExternalTransferModel
     public int RECEIVER_ACCOUNT_ID { get; set; }
     [Required]
     //max like 1 million transfer
-    [Range(0,1000000)]
+    [Range(0.01,Double.MaxValue,ErrorMessage = "Amount must be above 0.01")]
     public double AMOUNT { get; set; }
         
     //added this so i can check if they have enough funds

@@ -23,7 +23,7 @@
                 <h2 class="welcomeMessage">Welcome back @ViewBag.CustomerName!</h2>
                 @Html.AntiForgeryToken()
                 <select class="accountsHomeSelect" name="AccountForm">
-                    <option id="options">Select Different Currency Account:</option>
+                    <option asp-for="ACCOUNT_ID"id="options">Select Different Currency Account:</option>
                     @{
                         foreach (var i in Model)
                         {

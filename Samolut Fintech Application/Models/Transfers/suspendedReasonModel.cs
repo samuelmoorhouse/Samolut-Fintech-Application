@@ -3,6 +3,6 @@ namespace Samolut_Fintech_Application.Models.Transfers;
 
 public class suspendedReasonModel
 {
-    [Required]
+    [Required(ErrorMessage = "Please input a reason.")]
     public string SUSPENDED_TRANSACTION_REASON { get; set; }
 }

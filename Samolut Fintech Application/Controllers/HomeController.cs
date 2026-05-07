@@ -103,7 +103,7 @@ namespace Samolut_Fintech_Application.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+        
             //remalking the transaction and make it go through
             var suspendedTransaction = _context.SuspiciousTransaction.Where(i=>i.SUSPENDED_TRANSACTION_ID == data.SUSPENDED_TRANSACTION_ID).FirstOrDefault();
             var unSuspendedTransaction = new Transaction
@@ -147,8 +147,9 @@ namespace Samolut_Fintech_Application.Controllers
             
             
             return RedirectToAction("Activity");
-        }
         
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BanAccount(SuspiciousTransaction data)
@@ -159,27 +160,29 @@ namespace Samolut_Fintech_Application.Controllers
             }
 
             int? userId = HttpContext.Session.GetInt32("UserId");
-            
+
             if (userId != 1)
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+        
+
             //ban customer from theere transaction
-            var suspendedTransaction = _context.SuspiciousTransaction.Where(i=>i.SUSPENDED_TRANSACTION_ID == data.SUSPENDED_TRANSACTION_ID).FirstOrDefault();
+            var suspendedTransaction = _context.SuspiciousTransaction
+                .Where(i => i.SUSPENDED_TRANSACTION_ID == data.SUSPENDED_TRANSACTION_ID).FirstOrDefault();
             var accountID = suspendedTransaction.SENDER_ACCOUNT_ID;
             var customerID = await _context.SuspiciousTransaction
-                .Include(i=>i.SenderAccountIdForeignKey)
-                .Where(i=>i.SENDER_ACCOUNT_ID == accountID)
-                .Select(i=>i.SenderAccountIdForeignKey.CUSTOMER_ID).FirstOrDefaultAsync();
+                .Include(i => i.SenderAccountIdForeignKey)
+                .Where(i => i.SENDER_ACCOUNT_ID == accountID)
+                .Select(i => i.SenderAccountIdForeignKey.CUSTOMER_ID).FirstOrDefaultAsync();
             var customer = await _context.Customer
                 .Where(i => i.CUSTOMER_ID == customerID).FirstOrDefaultAsync();
-            
-            
+
+
             customer.SUSPENDED = 2; //0 is fine 1 is suspoended a nd 2 baned
             _context.Customer.Update(customer);
             await _context.SaveChangesAsync();
-            
+
             //delete suspicous transaction
             _context.SuspiciousTransaction.Remove(suspendedTransaction);
             await _context.SaveChangesAsync();
@@ -232,7 +235,7 @@ namespace Samolut_Fintech_Application.Controllers
 
         //all home page stuff
 
-        public async Task<IActionResult> ApplicationHome()
+        public async Task<IActionResult> ApplicationHome(int? AccountForm)
         {
 
             if (HttpContext.Session.GetInt32("UserId") == null)
@@ -248,7 +251,6 @@ namespace Samolut_Fintech_Application.Controllers
             {
                 return RedirectToAction("Activity", "Admin");
             }
-            
             
             //check if accounts suspended or banned on every page
             var suspended = await _context.Customer
@@ -266,21 +268,37 @@ namespace Samolut_Fintech_Application.Controllers
             
             
             //start every account on a likle default gbp, this will be made on sign up.
+            int currencyAccount;
+            int currencyAccountId;
+            if (AccountForm == null)
+            {
+                currencyAccount = 1;
+                currencyAccountId = await _context.Account
+                    .Where(i => i.ACCOUNT_ID == currencyAccount)
+                    .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
+
+            }
+            else
+            {
+                currencyAccount = AccountForm.Value;
+                currencyAccountId = await _context.Account
+                    .Where(i => i.ACCOUNT_ID == currencyAccount)
+                    .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
+            }
             
-            int DefaultAccount = 1;
-            var DefaultAccountDetails = await _context.Account
+            var accountDetails = await _context.Account
                 .Include(i => i.CurrencyIdForeignKey)
-                .Include(i=>i.AccountTypeIdForeignKey)
+                .Include(i => i.AccountTypeIdForeignKey)
                 .Where(i => i.CUSTOMER_ID == userId)
-                .Where(i=>i.CurrencyIdForeignKey.COUNTRY_CURRENCY_ID == 1).FirstOrDefaultAsync(); //as gbp is always made first
-            
+                .Where(i => i.CurrencyIdForeignKey.COUNTRY_CURRENCY_ID == currencyAccountId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 1).FirstOrDefaultAsync();
             
             //default account stuff
-            ViewBag.ACCOUNT_ID = DefaultAccountDetails.ACCOUNT_ID;
-            ViewBag.COUNTRY_CURRENCY_NAME = DefaultAccountDetails.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME;
-            ViewBag.COUNTRY_CURRENCY_ID = DefaultAccountDetails.COUNTRY_CURRENCY_ID;
-            ViewBag.ACCOUNT_BALANCE = DefaultAccountDetails.ACCOUNT_BALANCE;
-            ViewBag.ACCOUNT_TYPE_ID = DefaultAccountDetails.ACCOUNT_TYPE_ID;
+            ViewBag.ACCOUNT_ID = accountDetails.ACCOUNT_ID;
+            ViewBag.COUNTRY_CURRENCY_NAME = accountDetails.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME;
+            ViewBag.COUNTRY_CURRENCY_ID = accountDetails.COUNTRY_CURRENCY_ID;
+            ViewBag.ACCOUNT_BALANCE = accountDetails.ACCOUNT_BALANCE;
+            ViewBag.ACCOUNT_TYPE_ID = accountDetails.ACCOUNT_TYPE_ID;
             
             var customerName = await _context.Customer
                 .Where(i => i.CUSTOMER_ID == userId)
@@ -294,42 +312,17 @@ namespace Samolut_Fintech_Application.Controllers
                 .Where(i => i.CUSTOMER_ID == userId)
                 .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
             
-            var defaultSelectedTransactions = await _context.Transaction
+            var selectedTransactions = await _context.Transaction
                 .Include(i =>
                     i.SenderAccountIdForeignKey) //include the foreign keys so i know the details of each accoujnt
                 .Include(i => i.ReceiverAccountIdForeignKey)
-                .Where(i => i.SENDER_ACCOUNT_ID == 1 || i.RECEIVER_ACCOUNT_ID == 1)
+                .Where(i => i.SENDER_ACCOUNT_ID == accountDetails.ACCOUNT_ID || i.RECEIVER_ACCOUNT_ID == accountDetails.ACCOUNT_ID)
                 .Where(i=>i.SenderAccountIdForeignKey.CUSTOMER_ID == userId || i.ReceiverAccountIdForeignKey.CUSTOMER_ID == userId).ToListAsync();
                 //the || means or
 
-            ViewBag.defaultSelectedTransactions = defaultSelectedTransactions;
+            ViewBag.defaultSelectedTransactions = selectedTransactions;
 
             return View(accounts);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApplicationHome(Account data)
-        {
-            if (HttpContext.Session.GetInt32("UserId") == null)
-            {
-            return RedirectToAction("Login", "Account");
-            }
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            
-            //check if accounts suspended or banned on every page
-            var suspended = await _context.Customer
-                .Where(i => i.CUSTOMER_ID == userId)
-                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
-            if (suspended == 1)
-            {
-                return RedirectToAction("Suspension", "Application");
-            } else if (suspended == 2)
-            {
-                return RedirectToAction("BannedAccount", "Application");
-            }
-
-            return View();
         }
         
         
@@ -520,7 +513,7 @@ namespace Samolut_Fintech_Application.Controllers
                 .Include(i => i.CurrencyIdForeignKey)
                 .Where(i => i.CUSTOMER_ID == userId)
                 .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
-            ViewBag.ErrorMessage = "Model Invalid";
+            ViewBag.ErrorMessage = "Please fix form errors.";
             return View("TransferInternalCurrency", data); //becuase my post is named differently to the file i have to tell it where to go back to
         }
         
