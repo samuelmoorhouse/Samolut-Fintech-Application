@@ -713,8 +713,6 @@ namespace Samolut_Fintech_Application.Controllers
                 ViewBag.accounts = await _context.Account
                     .Include(i => i.CurrencyIdForeignKey)
                     .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
-
-                ViewBag.ErrorMessage = "Success!";
                 
                 //as suspended van make withgdrawals, after the witdrawal transaction suspended must go back to banned page
                 if (suspended == 2)
@@ -722,7 +720,10 @@ namespace Samolut_Fintech_Application.Controllers
                     return RedirectToAction("BannedAccount", "Application");
                 } 
                 
-                return View(data);
+                return RedirectToAction("SuccessfullTransfer", new
+                {
+                    transactionID = TransactionData.TRANSACTION_ID
+                });
             }
 
             //if not need to relaoad page with eveythign it had before, i use this code below allot abovewhenever invalid data
@@ -736,6 +737,42 @@ namespace Samolut_Fintech_Application.Controllers
             ViewBag.ErrorMessage = "Model Invalid";
             return View(data);
             
+        }
+
+        public async Task<IActionResult> SuccessfullTransfer(int transactionID)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            }
+
+            var transaction = await _context.Transaction
+                .Where(i => i.TRANSACTION_ID == transactionID).FirstOrDefaultAsync();
+            
+            var senderName = await _context.Account
+                .Where(i => i.ACCOUNT_ID == transaction.SENDER_ACCOUNT_ID)
+                .Select(i => i.ACCOUNT_NAME).FirstOrDefaultAsync();
+
+            var receiverName = await _context.Account
+                .Where(i => i.ACCOUNT_ID == transaction.RECEIVER_ACCOUNT_ID)
+                .Select(i => i.ACCOUNT_NAME).FirstOrDefaultAsync();
+            
+            ViewBag.AMOUNT = transaction.AMOUNT;
+            ViewBag.SENDER_ACCOUNT_NAME = senderName;
+            ViewBag.RECEIVER_ACCOUNT_NAME = receiverName;
+            ViewBag.EXCHANGE_RATE = transaction.EXCHANGE_RATE;
+            return View();
         }
         
         
