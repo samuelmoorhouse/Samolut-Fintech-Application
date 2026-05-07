@@ -419,10 +419,7 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
-            } else if (suspended == 2)
-            {
-                return RedirectToAction("BannedAccount", "Application");
-            }
+            } 
             
             
             
@@ -503,10 +500,6 @@ namespace Samolut_Fintech_Application.Controllers
                 
                 double NewCurrencyAmount = Math.Round((data.AMOUNT * ExchangeRate),2); //so to 2dp
                 
-                
-                
-                
-                
                 return RedirectToAction("ConfirmTransfer", new
                 {
                     senderID = data.SENDER_ACCOUNT_ID,
@@ -549,10 +542,7 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
-            } else if (suspended == 2)
-            {
-                return RedirectToAction("BannedAccount", "Application");
-            }
+            } 
             
             
             
@@ -613,10 +603,7 @@ namespace Samolut_Fintech_Application.Controllers
             if (suspended == 1)
             {
                 return RedirectToAction("Suspension", "Application");
-            } else if (suspended == 2)
-            {
-                return RedirectToAction("BannedAccount", "Application");
-            }
+            } 
             
             
             
@@ -735,6 +722,12 @@ namespace Samolut_Fintech_Application.Controllers
                     .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
 
                 ViewBag.ErrorMessage = "Success!";
+                
+                //as suspended van make withgdrawals, after the witdrawal transaction suspended must go back to banned page
+                if (suspended == 2)
+                {
+                    return RedirectToAction("BannedAccount", "Application");
+                } 
                 
                 return View(data);
             }
@@ -1276,6 +1269,54 @@ namespace Samolut_Fintech_Application.Controllers
             
             return View();
         }
+        
+        public async Task<IActionResult> TransferWithdrawToBank()
+        {
+
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } 
+            
+            //can be accessed by people withdrawing funds.
+            
+            
+            
+            
+            var countryCurrencies = await _context.CurrentCurrency.ToListAsync();
+
+
+            var accounts = await _context.Account
+                .Include(i =>
+                    i.CurrencyIdForeignKey) //added a  foreign key in my db, so i can read off trhe currency names as i made it to be 3nf so its in seperate table
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+            
+            //add bank acounts
+            var bankAccounts = await _context.Account
+                .Include(i =>
+                    i.CurrencyIdForeignKey) //added a  foreign key in my db, so i can read off trhe currency names as i made it to be 3nf so its in seperate table
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 2).ToListAsync();
+
+            ViewBag.accounts = accounts;
+            ViewBag.bankAccounts = bankAccounts;
+            
+            return View();
+        }
+        
+        
 
     }
     

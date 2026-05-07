@@ -1,0 +1,74 @@
+@model Samolut_Fintech_Application.Models.Transfers.InternalCurrencyModel
+@*make navbar glow on roght page*@
+<style>
+    #Payments {
+        background-color: rgba(98, 204, 141, 0.5);
+    }
+
+        #Payments:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+</style>
+
+<body>
+    <div class="topDisplay">
+        <h2>Samolut Payments</h2>
+    </div>
+
+    <div class="mainAppSpace">
+        <div class="applicationBox">
+            
+            @* learnt tht these are razor comments and they can be used anywhere and dont show on inspect element*@
+            
+                <div class="TransferBox">
+                    <form asp-action="CalculateCurrency" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <label for="SENDER_ACCOUNT_ID">Account to Send Money</label><br/>
+                        <select asp-for="SENDER_ACCOUNT_ID" id="SENDER_ACCOUNT_ID" name="SENDER_ACCOUNT_ID" required>
+                            <option>Select Currency Account to Withdraw From: </option>
+                            @{
+                                foreach(var i in ViewBag.accounts)
+                                {
+                                    <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="SENDER_ACCOUNT_ID" class="errorMessages"></span><br />
+                        
+                        
+                        <label for="AMOUNT">Amount to Send </label>
+                        <input asp-for="AMOUNT" name="AMOUNT" type="number" step="0.01" placeholder="0.00" required/>
+                        <span asp-validation-for="AMOUNT" class="errorMessages"></span><br />
+                        
+                        <label for="RECEIVER_ACCOUNT_ID">Account to Receive Money</label>
+                        <select asp-for="RECEIVER_ACCOUNT_ID" id="RECEIVER_ACCOUNT_ID" name="RECEIVER_ACCOUNT_ID" required>
+                            <option>Select Bank Account to Transfer To: </option>
+                            @{
+                                foreach (var i in ViewBag.bankAccounts)
+                                {
+                                    <option value="@i.ACCOUNT_ID">@i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="RECEIVER_ACCOUNT_ID" class="errorMessages"></span><br />
+                        
+                        
+                        <label for="calculateButton">Calculate</label>
+                        <button name="calculateButton" class="SendMoneySubmit" type="submit">Calculate</button><br/>
+                        <span class="errorMessages">@ViewBag.ErrorMessage</span>
+                    </form>
+                </div>
+            
+                
+
+        </div>
+    </div>
+                    
+</body>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
