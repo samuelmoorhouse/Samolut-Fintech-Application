@@ -14,10 +14,11 @@
 <div class="mainAppSpace">
     <div class="applicationBox">
         <div class="paymentTypeButtons">
-            <a asp-action="ChooseExternal">Transfer To External Accounts (other peoples samolut accounts)</a>
-            <a asp-action="TransferBankToCurrency">Transfer Money From Your Bank Accounts To Your Currency Accounts</a>
-            <a asp-action="TransferInternalCurrency">Transfer Between Your Currency Accounts</a>
-            <a asp-action="TransferWithdrawToBank">Withdraw from currency accounts to Bank</a>
+            <a class="paymentButton" asp-action="ChooseExternal">Transfer To External Accounts (other peoples samolut accounts)</a>
+            <a class="paymentButton" asp-action="TransferBankToCurrency">Transfer Money From Your Bank Accounts To Your Currency Accounts</a>
+            <a class="paymentButton" asp-action="TransferInternalCurrency">Transfer Between Your Currency Accounts</a>
+            @* different id for withdraw as i want it to be red*@
+            <a class="paymentButton" id="withdrawButton" asp-action="TransferWithdrawToBank">Withdraw from currency accounts to Bank</a>
         </div>
 
     </div>

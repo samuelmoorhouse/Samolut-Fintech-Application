@@ -65,6 +65,10 @@ p {
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
     border-radius: 10px;
+    width: 250px;
+    margin: 20px;
+    padding: 3px;
+    
     
 }
 .accountSelectedBox {
@@ -73,10 +77,15 @@ p {
     height: 80%;
     border-radius: 10px;
     color: white;
+    margin-left: 1%;
 }
 .accountSelectionHome {
-    width: 30%;
+    display: flex;
+    flex-direction: row;
+    width: 60%;
     margin: 5%;
+    align-items: center;
+    
 }
 .applicationBox {
     display: flex;
@@ -91,10 +100,23 @@ p {
     display: flex;
     background-color: rgba(255, 255, 255, 0.1);
     width: 98%;
+    height: 12%;
+    margin: 1%;
+    border-radius: 10px;
+    align-items: center;
+}
+
+.singleTransactionsBox {
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.1);
+    width: 96%;
     height: 10%;
     margin: 1%;
     border-radius: 10px;
     align-items: center;
+    padding: 5px;
+    flex-direction: row;
+    justify-content: space-between; /* so the amounts the opposite side*/
 }
 
 .nav {
@@ -143,3 +165,238 @@ h2{
 }
 
 /*---------------------------------------------------------if someon eiujs on there phone it can use this css instead*/
+
+/*  more transaction stuff*/
+
+.transactionMessage{
+    color:  #e6e6e6;
+    font-size: large;
+    font-weight: bold;
+}
+
+.timeAndExchangeRate{
+    color: lightgrey;
+    font-size: medium;
+    
+}
+
+.amount{
+    font-size: large;
+    font-weight: bold;
+    color: white;
+}
+
+.accountImidiarteInfo{
+    padding: 7px;
+}
+
+.changeAccountButton{
+    background: rgb(180 180 180 / 0.35);
+    color: white;
+    padding: 6px;
+    border: none;
+    border-radius: 5px;
+    transition-duration: 0.3s;
+}
+
+/*made this cool effect when its going to be clicked*/
+.changeAccountButton:hover{
+    transition-duration: 0.3s;
+    background: rgb(140 251 132 / 0.35);
+    color: white;
+    padding: 3px;
+    border: none;
+    border-radius: 5px;
+    margin-top: 2px;
+}
+
+.paymentTypeButtons{
+    display: flex;
+    flex-direction: column;
+    padding: 7px;
+}
+.paymentButton{
+    display: flex;
+    background: rgb(180 180 180 / 0.35);
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    transition-duration: 0.3s;
+    margin: 10px;
+    height: 80px;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+.paymentButton:hover{
+    display: flex;
+    transition-duration: 0.3s;
+    background: rgb(140 251 132 / 0.35);
+    color: white;
+    padding: 7px;
+    border: none;
+    border-radius: 5px;
+    margin-top: 2px;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+
+}
+
+#withdrawButton{
+    background: rgb(193 105 105 / 0.35);
+}
+#withdrawButton:hover {
+    background: rgb(140 251 132 / 0.35);
+}
+
+.TransferBox form{
+    display: flex;
+    flex-direction: row;
+    margin: 20px;
+}
+.leftTransferBox{
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 1%;
+    padding: 1%;
+    border-radius: 10px;
+    
+    align-items: center;
+}
+.rightTransferBox{
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 1%;
+    padding: 1%;
+    border-radius: 10px;
+    align-items: center;
+}
+
+.transactionText{
+    font-size: large;
+    font-weight: bold;
+    color: white;
+}
+/* same select as home page  */
+.accountsTransactionSelect {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 10px;
+    width: 300px;
+    margin: 20px;
+    padding: 3px;
+
+
+}
+.accountsTransactionAmount{
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 10px;
+    width: 300px;
+    margin: 20px;
+    padding: 3px;
+    
+
+}
+/* same as the account button*/
+.transactionCalculateButton{
+    background: rgb(84 138 82 / 0.35);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition-duration: 0.3s;
+    margin: 10px;
+    padding: 3px;
+    
+    height: 30px;
+    width: 300px;
+}
+.transactionCalculateButton:hover{
+    transition-duration: 0.3s;
+    background: rgb(140 251 132 / 0.35);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin: 7px;
+}
+.errorMessages{
+    display: flex;
+    flex-direction: column;
+    width: 98%;
+    margin: 1%;
+    padding: 1%;
+    border-radius: 10px;
+
+    align-items: center;
+    font-weight: bold;
+    color: #dd6a6a;
+}
+
+#confirm{
+    background: rgb(193 105 105 / 0.35);
+    border: none;
+    outline: none;
+    color: white;
+
+}
+#confirm:hover{
+    background: rgb(140 251 132 / 0.35);
+}
+
+.placeConfirmBox{
+    display: flex;
+    align-items: center;
+    margin: 100px;
+}
+.confirmInfoBox{
+    display: flex;
+    flex-direction: column;
+    width: 98%;
+
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 1%;
+    padding: 1%;
+    border-radius: 10px;
+    align-items: center;
+}
+
+.confirmText{
+    font-size: large;
+    font-weight: bold;
+    color: white;
+    margin: 20px;
+}
+#transactionConfirmed{
+    color: rgb(83 232 74 / 0.59);
+    font-size: x-large;
+}
+
+
+#returnButton{
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    text-decoration: none;
+    padding-top: 10px;
+}
+
+#externalConfirm{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#externalMessage{
+    margin: 5px;
+    font-size: medium;
+    font-weight: normal;
+    color: lightgrey;
+}

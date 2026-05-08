@@ -1,4 +1,4 @@
-@model Samolut_Fintech_Application.Models.Transfers.InternalCurrencyModel
+@model Samolut_Fintech_Application.Models.Transfers.ExternalTransferModel
 <body>
     <div class="topDisplay">
         <h2>Samolut Payments</h2>
@@ -10,7 +10,7 @@
                     <p class="confirmText">Amount to be Sent: @ViewBag.SenderAccountSymbol@Model.ORIGINAL_AMOUNT @ViewBag.SenderAccountName </p>
                     <p class="confirmText">Exchange rate (@ViewBag.SenderAccountName to @ViewBag.ReceiverAccountName): @Model.EXCHANGE_RATE</p>
                     <p class="confirmText">Amount to be Received in Native Currency: @ViewBag.ReceiverAccountSymbol@Model.AMOUNT @ViewBag.ReceiverAccountName</p>
-                    <form asp-action="ConfirmTransfer" method="post">
+                    <form asp-action="ConfirmExternalTransfer" method="post">
                         <button class="transactionCalculateButton" name="calculateButton" id="confirm" type="submit">Confirm and Send</button>
                         @*to transfer all that data again to the actual transfer code, already in model so dont need to add value*@
                         <input type="hidden" asp-for="ORIGINAL_AMOUNT"/>
@@ -21,6 +21,7 @@
                         <input type="hidden" asp-for="START_CURRENCY"/>
                         <input type="hidden" asp-for="END_CURRENCY"/>
                         <input type="hidden" asp-for="SENDER_GBP_EXCHANGE_RATE"/>
+                        <input type="hidden" asp-for="CUSTOMER_ID"/>
                     </form>
                     <span class="errorMessages">@ViewBag.ErrorMessage</span>
                 </div>

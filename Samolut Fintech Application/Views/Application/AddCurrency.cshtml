@@ -31,7 +31,7 @@
                 <label for="CURRENCY_ACCOUNT_ID">Choose a Currency Account to Add</label><br/>
                 @*display the bank accounts they can have*@
                 <select asp-for="CURRENCY_ACCOUNT_ID" id="CURRENCY_ACCOUNT_ID" name="CURRENCY_ACCOUNT_ID" required>
-                    <option>Select Currency to Add</option>
+                    <option value="">Select Currency to Add</option>
                     @{
                         foreach(var i in ViewBag.currencyAccounts) @*so recipients instead of just accounts*@
                         {

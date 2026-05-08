@@ -22,32 +22,41 @@
             
             @* learnt tht these are razor comments and they can be used anywhere and dont show on inspect element*@
             
-                <div class="TransferBox">
-                    <form asp-action="ReceiveExternalCustomer" method="post">
-                        @Html.AntiForgeryToken()
-                        <label for="PHONE_NUMBER">Type the phone number of the recipients account you want to transfer money to.</label>
-                        <input type="tel" asp-for="PHONE_NUMBER" required/>
+            <div class="TransferBox">
+                <form asp-action="ReceiveExternalCustomer" method="post">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="leftTransferBox">
+                        <label class="transactionText" for="PHONE_NUMBER">Type the Phone Number of the Recipients Account you want to transfer money to.</label>
+                        <input class="accountsTransactionAmount" type="tel" asp-for="PHONE_NUMBER" required/>
+                    
+                    </div>
+                    
+                    <div class="rightTransferBox">
+                        <label class="transactionText" for="FULL_NAME">Type the Full Name of the Recipient's account. (First and Last Name)</label>
+                        <input class="accountsTransactionAmount" type="text" asp-for="FULL_NAME" required/>
+                    
+                        <button class="transactionCalculateButton" type="submit">Check Recipient Details</button>
+
+                        <span class="transactionText" id="externalMessage">@ViewBag.ConfirmMessage</span>
                         
-                        <label for="FULL_NAME">Type the full name of the recipient account. (First and Last Name)</label>
-                        <input  type="text" asp-for="FULL_NAME" required/>
-                        
-                        <button type="submit">Check Recipient Details</button>
-                        
-                        <span>@ViewBag.ConfirmMessage</span>
-                    </form>
-                    @if (ViewBag.ExternalName != null)
-                    {
-                        //form to go to the transaction page
+                    </div>
+                </form>
+                @if (ViewBag.ExternalName != null)
+                {
+                    //form to go to the transaction page
+                    <div class="confirmInfoBox">
                         <form asp-action="TransferToExternal">
                             @Html.AntiForgeryToken()
 
-                            <p>To continue with transaction for @ViewBag.ExternalName.</p>
+                            <pc class="transactionText" id="externalConfirm">To continue with transaction for @ViewBag.ExternalName</pc><br/>
                             <input hidden value="@ViewBag.ExternalID" asp-for="CUSTOMER_ID"/>
-                            <button type="submit">Confirm Transfer Recipient</button>
+                            <button class="transactionCalculateButton" type="submit">Confirm Transfer Recipient</button>
                         </form>
-                    }
-                    
-                </div>
+                    </div>
+                }
+
+            </div>
             
                 
 

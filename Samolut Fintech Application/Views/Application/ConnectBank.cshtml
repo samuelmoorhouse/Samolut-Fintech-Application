@@ -30,7 +30,7 @@
                 <label for="BANK_ID">Choose a Bank account to connect to Samolut</label><br/>
                 @*display the bank accounts they can have*@
                 <select asp-for="BANK_ID" id="BANK_ID" name="BANK_ID" required>
-                    <option>Select Bank to Connect</option>
+                    <option value="">Select Bank to Connect</option>
                     @{
                         foreach(var i in ViewBag.bankAccounts) @*so recipients instead of just accounts*@
                         {

@@ -25,36 +25,41 @@
                     <form asp-action="CalculateCurrency" method="post">
                         @Html.AntiForgeryToken()
 
-                        @*what im sending it from*@
-                        <label for="SENDER_ACCOUNT_ID">Bank account to deposit funds.</label><br/>
                         
-                        @*display the currency accounts the same way i have in the home page*@
-                        <select asp-for="SENDER_ACCOUNT_ID" id="SENDER_ACCOUNT_ID" name="SENDER_ACCOUNT_ID" required>
-                            <option>Select Bank Account to Deposit From: </option>
-                            @{
-                                foreach(var i in ViewBag.bankAccounts)
-                                {
-                                    <option value="@i.ACCOUNT_ID">@i.ACCOUNT_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
+                        <div class="leftTransferBox">
+                            @*what im sending it from*@
+                            <label class="transactionText" for="SENDER_ACCOUNT_ID">Bank account to deposit funds.</label><br/>
+                        
+                            @*display the currency accounts the same way i have in the home page*@
+                            <select class="accountsTransactionSelect" asp-for="SENDER_ACCOUNT_ID" id="SENDER_ACCOUNT_ID" name="SENDER_ACCOUNT_ID" required>
+                                <option value="">Select Bank Account to Deposit From: </option>
+                                @{
+                                    foreach(var i in ViewBag.bankAccounts)
+                                    {
+                                        <option value="@i.ACCOUNT_ID">@i.ACCOUNT_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
+                                    }
                                 }
-                            }
                             
-                        </select>
-                        <span asp-validation-for="SENDER_ACCOUNT_ID" class="errorMessages"></span><br />
+                            </select>
+                            <span asp-validation-for="SENDER_ACCOUNT_ID" class="errorMessages"></span><br />
                         
-                        <label for="AMOUNT">Amount to Send </label>
-                        @* adding step basically meant that instead of a whole number it would allow 2 decimal places and used placeholder*@
-                        <input asp-for="AMOUNT" name="AMOUNT" type="number" step="0.01" placeholder="0.00" required/>
-                        @*make sure they can only send whats in there account and if its not suspicous*@ 
-                        <span asp-validation-for="AMOUNT" class="errorMessages"></span><br />
+                            <label class="transactionText" for="AMOUNT">Amount to Send </label>
+                            @* adding step basically meant that instead of a whole number it would allow 2 decimal places and used placeholder*@
+                            <input class="accountsTransactionAmount" asp-for="AMOUNT" name="AMOUNT" type="number" step="0.01" placeholder="0.00" required/>
+                            @*make sure they can only send whats in there account and if its not suspicous*@ 
+                            <span asp-validation-for="AMOUNT" class="errorMessages"></span><br />
                         
+                        </div>
                         
+                        <div class="rightTransferBox">
+
                         
 
                         
                         @*receiviong account*@
-                        <label for="RECEIVER_ACCOUNT_ID">Account to Receive Money</label>
-                        <select asp-for="RECEIVER_ACCOUNT_ID" id="RECEIVER_ACCOUNT_ID" name="RECEIVER_ACCOUNT_ID" required>
-                            <option>Select Currency Account to Transfer From: </option>
+                        <label class="transactionText" for="RECEIVER_ACCOUNT_ID">Account to Receive Money</label>
+                        <select class="accountsTransactionSelect" asp-for="RECEIVER_ACCOUNT_ID" id="RECEIVER_ACCOUNT_ID" name="RECEIVER_ACCOUNT_ID" required>
+                            <option value="">Select Currency Account to Transfer From: </option>
                             @{
                                 foreach (var i in ViewBag.accounts)
                                 {
@@ -66,9 +71,11 @@
                         <span asp-validation-for="RECEIVER_ACCOUNT_ID" class="errorMessages"></span><br />
                         
                         @*Wanted the users to calculate and see the exchange rate before they sent the money*@
-                        <label for="calculateButton">Calculate Exchange Rate</label>
-                        <button name="calculateButton" class="SendMoneySubmit" type="submit">Calculate</button><br/>
+                        <label class="transactionText" for="calculateButton">Calculate Exchange Rate</label>
+                        <button class="transactionCalculateButton" name="calculateButton" type="submit">Calculate</button><br/>
                         <span class="errorMessages">@ViewBag.ErrorMessage</span>
+                        
+                        </div>
                     </form>
                 </div>
             
