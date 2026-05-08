@@ -81,9 +81,13 @@ namespace Samolut_Fintech_Application.Controllers
             }
             
             //get all suspicous transactions to display for admin
-            var suspisiousTransactions = await _context.SuspiciousTransaction.ToListAsync();
+            var suspisiousTransactions = await _context.SuspiciousTransaction
+                .Include(i => i.SenderAccountIdForeignKey.CustomerIdForeignKey)
+                .Include(i => i.ReceiverAccountIdForeignKey.CustomerIdForeignKey)
+                .Include(i => i.SenderAccountIdForeignKey.CurrencyIdForeignKey)
+                .Include(i => i.ReceiverAccountIdForeignKey.CurrencyIdForeignKey)
+                .ToListAsync();
              ViewBag.SuspisiousTransactions = suspisiousTransactions;
-            
             return View();
             
         }

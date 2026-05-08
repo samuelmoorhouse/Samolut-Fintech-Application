@@ -4,64 +4,39 @@
 }
 <body>
 <div class="mainAppSpace">
-    <div class="HistoryBox">
-        <p>The suspend transaction reason is written by the user when they see there account is suspended. (If empty, wait for user to submit a reason before reviewing and unsuspending)</p>
-        <p>After review, ban or un-suspend their account.</p>
-        <h3>Review Accounts</h3>
+    <div class="applicationBox">
+        <p class="transactionText" >The suspend transaction reason is written by the user when they see there account is suspended. (If empty, wait for user to submit a reason before reviewing and unsuspending)</p>
+        <p class="transactionText">After review, ban or un-suspend their account.</p>
         @*for transactions to be displayed only if somethings selecte, so chgecking it againsta a viewbag i used above*@
         @{
             if (ViewBag.SuspisiousTransactions != null)
             {
-                <div class="transactionTableBox">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Sender</th>
-                            <th>Suspended Transaction Reason</th>
-                            <th>Receiver</th>
-                            <th>Date</th>
-                            <th>Start Currency</th>
-                            <th>End Currency</th>
-                            <th>Exchange Rate</th>
-                            <th>Amount</th>
-                            <th>Button to Un-Suspend</th>
-                            <th>Button to Ban Account</th>
+                    foreach (var i in ViewBag.SuspisiousTransactions)
+                    {
+                        <div class="singleTransactionsBox">
+                            <div class="leftOfTransaction">
+                                <p class="transactionMessage">@i.SenderAccountIdForeignKey.CustomerIdForeignKey.FIRST_NAME @i.SenderAccountIdForeignKey.CustomerIdForeignKey.LAST_NAME's Suspended</p>
+                                <p class="timeAndExchangeRate">Sent From @i.SenderAccountIdForeignKey.ACCOUNT_NAME To @i.ReceiverAccountIdForeignKey.ACCOUNT_NAME</p>
+                                <p class="timeAndExchangeRate">@i.TRANSACTION_TIME
+                                    Exhange rate of: @i.EXCHANGE_RATE</p>
+                                <p class="timeAndExchangeRate">Reason Submitted: @i.SUSPENDED_TRANSACTION_REASON
 
-
-                        </tr>
-                        </thead>
-                        <tbody>
-                        @{
-
-                            foreach (var i in ViewBag.SuspisiousTransactions)
-                            {
-                                <tr>
-                                    <td>@i.SENDER_ACCOUNT_ID</td>
-                                    <td>@i.SUSPENDED_TRANSACTION_REASON</td>
-                                    <td>@i.RECEIVER_ACCOUNT_ID</td>
-                                    <td>@i.TRANSACTION_TIME</td>
-                                    <td>@i.START_CURRENCY</td>
-                                    <td>@i.END_CURRENCY</td>
-                                    <td>@i.EXCHANGE_RATE</td>
-                                    <td>@i.AMOUNT</td>
-                                    <th><form asp-action="UnSuspend" method="post">
-                                            <input name="SUSPENDED_TRANSACTION_ID" value="@i.SUSPENDED_TRANSACTION_ID" hidden/>
-                                            <button type="submit">Un-Suspend Account</button>
-                                        </form>  
-                                    </th>
-                                    <th><form asp-action="BanAccount">
-                                            <input name="SUSPENDED_TRANSACTION_ID" value="@i.SUSPENDED_TRANSACTION_ID" hidden/>
-                                            <button type="submit">Ban Account</button>
-                                        </form> 
-                                    </th>
-                                </tr>
-                            }
-
-                        }
-                        </tbody>
-                    </table>
-                </div>
-            }
+                            </div>
+                            <div>
+                                <p class="amount">@i.ReceiverAccountIdForeignKey.CurrencyIdForeignKey.CURRENCY_ICON@i.AMOUNT</p>
+                                
+                            </div>
+                            <form asp-action="UnSuspend" method="post">
+                                <input name="SUSPENDED_TRANSACTION_ID" value="@i.SUSPENDED_TRANSACTION_ID" hidden/>
+                                <button class="transactionCalculateButton" styles="width:100px;" type="submit">Un-Suspend Account</button>
+                            </form>
+                            <form asp-action="BanAccount">
+                                <input name="SUSPENDED_TRANSACTION_ID" value="@i.SUSPENDED_TRANSACTION_ID" hidden/>
+                                <button class="transactionCalculateButton" styles="width:100px;" type="submit">Ban Account</button>
+                            </form>
+                        </div>
+                    }
+                }
         }
     </div>
     </div>
