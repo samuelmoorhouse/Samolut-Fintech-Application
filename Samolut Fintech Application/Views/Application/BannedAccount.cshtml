@@ -1,12 +1,18 @@
 <body>
-    
-<div class="loginSpace">
-    <div class="phoneLogin">
-        <p class="welcomeText">Account has been permanently suspended following a suspicion review on a recent transaction.</p>
-        <p class="welcomeText">You can still withdraw remaining funds from samolut to your bank.</p>
-        <a asp-action="TransferWithdrawToBank">Withdraw from currency accounts to Bank</a>
+    <div class="topDisplay">
+        <h2></h2>
     </div>
-</div>
+    <div class="applicationBox">
+    <div class="TransferBox">
+        <div class="placeConfirmBox">
+            <div class="confirmInfoBox">
+                <p class="confirmText" style="color:#dd6a6a">Account has been permanently suspended following a suspicion review on a recent transaction.</p>
+                <p class="confirmText">You can still withdraw remaining funds from samolut to your bank.</p>
+                <a class="paymentButton" asp-action="TransferWithdrawToBank">Withdraw from currency accounts to Bank</a>
+            </div>
+        </div>
+        </div>
+    </div>
 </body>
 
 

@@ -6,39 +6,54 @@
 <body>
 <div class="loginSpace">
     <div class="signupDiv">
-        <form method="post" asp-action="SignUp">
+        <form id="signupform" method="post" asp-action="SignUp">
         <div class="signupLeft">
             <h2>Join Samolut!</h2>
             <div class="labelAndInput">
                 <label for="FIRST_NAME" class="formLabels">First Name:</label><br/>
-                <input type="text" id="fname" asp-for="FIRST_NAME" placeholder="Enter your First Name" required><br/>
+                <input type="text" id="fname" asp-for="FIRST_NAME" placeholder="Enter your First Name" required>
             </div>
+            <span asp-validation-for="FIRST_NAME" class="errorMessages"></span>
+            
             <div class="labelAndInput">
                 <label for="MIDDLE_NAME" class="formLabels">Middle Name: (Optional)</label><br/>
                 <input type="text" id="mname" asp-for="MIDDLE_NAME" placeholder="Enter your Middle Name"><br/>
             </div>
+            <span asp-validation-for="FIRST_NAME" class="errorMessages"></span>
 
             <div class="labelAndInput">
                 <label for="LAST_NAME" class="formLabels">Last Name:</label><br/>
-                <input type="text" id="lname" asp-for="LAST_NAME" placeholder="Enter your Last Name" required><br/>
+                <input type="text" id="lname" asp-for="LAST_NAME" placeholder="Enter your Last Name" required>
             </div>
+            <span asp-validation-for="LAST_NAME" class="errorMessages"></span><br />
 
 
         </div>
         <div class="signupRight">
             <div class="labelAndInput">
                 <label for="PHONE_NUMBER" class="formLabels">Phone Number:</label><br/>
-                <input type="text" id="phone2" asp-for="PHONE_NUMBER" placeholder="Enter your Phone Number" required><br/>
+                <input type="text" id="phone2" asp-for="PHONE_NUMBER" placeholder="Enter your Phone Number" required>
             </div>
+            <span asp-validation-for="PHONE_NUMBER" class="errorMessages"></span><br />
 
             <div class="labelAndInput">
                 <label for="PASSWORD" class="formLabels">Password: </label><br/>
                 <!--csause i have password using the same css i jhsed passwiord 2 same for phone-->
-                <input type="text" id="password2" asp-for="PASSWORD" placeholder="Enter your Password" required><br/>
+                <input type="text" id="password2" asp-for="PASSWORD" placeholder="Enter your Password" required>
+            </div>
+            <span asp-validation-for="PASSWORD" class="errorMessages"></span><br />
+            <div class="labelAndInput">
+                <button class="transactionCalculateButton"  type="submit">Submit</button>
             </div>
             <div class="labelAndInput">
-                <button class="Submit" type="submit">Submit</button>
-            </div>
+                @{
+                    if (ViewBag.ErrorMessage != null)
+                    {
+                        <span class="errorMessages">@ViewBag.ErrorMessage</span><br />
+                    }
+                }
+                </div>
+            
         </div>
         </form>
     </div>
