@@ -8,9 +8,9 @@ namespace Samolut_Fintech_Application.Models.DatabaseModels
     {
         [Key]
         public int TRANSACTION_ID { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Please select an account.")]
         public int SENDER_ACCOUNT_ID { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Please select an account.")]
         public int RECEIVER_ACCOUNT_ID { get; set; }
         [Required]
         public double AMOUNT { get; set; }

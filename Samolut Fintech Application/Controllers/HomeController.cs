@@ -103,7 +103,7 @@ namespace Samolut_Fintech_Application.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+        
             //remalking the transaction and make it go through
             var suspendedTransaction = _context.SuspiciousTransaction.Where(i=>i.SUSPENDED_TRANSACTION_ID == data.SUSPENDED_TRANSACTION_ID).FirstOrDefault();
             var unSuspendedTransaction = new Transaction
@@ -147,8 +147,9 @@ namespace Samolut_Fintech_Application.Controllers
             
             
             return RedirectToAction("Activity");
-        }
         
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BanAccount(SuspiciousTransaction data)
@@ -159,27 +160,29 @@ namespace Samolut_Fintech_Application.Controllers
             }
 
             int? userId = HttpContext.Session.GetInt32("UserId");
-            
+
             if (userId != 1)
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+        
+
             //ban customer from theere transaction
-            var suspendedTransaction = _context.SuspiciousTransaction.Where(i=>i.SUSPENDED_TRANSACTION_ID == data.SUSPENDED_TRANSACTION_ID).FirstOrDefault();
+            var suspendedTransaction = _context.SuspiciousTransaction
+                .Where(i => i.SUSPENDED_TRANSACTION_ID == data.SUSPENDED_TRANSACTION_ID).FirstOrDefault();
             var accountID = suspendedTransaction.SENDER_ACCOUNT_ID;
             var customerID = await _context.SuspiciousTransaction
-                .Include(i=>i.SenderAccountIdForeignKey)
-                .Where(i=>i.SENDER_ACCOUNT_ID == accountID)
-                .Select(i=>i.SenderAccountIdForeignKey.CUSTOMER_ID).FirstOrDefaultAsync();
+                .Include(i => i.SenderAccountIdForeignKey)
+                .Where(i => i.SENDER_ACCOUNT_ID == accountID)
+                .Select(i => i.SenderAccountIdForeignKey.CUSTOMER_ID).FirstOrDefaultAsync();
             var customer = await _context.Customer
                 .Where(i => i.CUSTOMER_ID == customerID).FirstOrDefaultAsync();
-            
-            
+
+
             customer.SUSPENDED = 2; //0 is fine 1 is suspoended a nd 2 baned
             _context.Customer.Update(customer);
             await _context.SaveChangesAsync();
-            
+
             //delete suspicous transaction
             _context.SuspiciousTransaction.Remove(suspendedTransaction);
             await _context.SaveChangesAsync();
@@ -232,7 +235,7 @@ namespace Samolut_Fintech_Application.Controllers
 
         //all home page stuff
 
-        public async Task<IActionResult> ApplicationHome()
+        public async Task<IActionResult> ApplicationHome(int? AccountForm)
         {
 
             if (HttpContext.Session.GetInt32("UserId") == null)
@@ -248,7 +251,6 @@ namespace Samolut_Fintech_Application.Controllers
             {
                 return RedirectToAction("Activity", "Admin");
             }
-            
             
             //check if accounts suspended or banned on every page
             var suspended = await _context.Customer
@@ -266,21 +268,38 @@ namespace Samolut_Fintech_Application.Controllers
             
             
             //start every account on a likle default gbp, this will be made on sign up.
+            int currencyAccount;
+            int currencyAccountId;
+            if (AccountForm == null)
+            {
+                currencyAccount = 1;
+                currencyAccountId = await _context.Account
+                    .Where(i => i.ACCOUNT_ID == currencyAccount)
+                    .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
+
+            }
+            else
+            {
+                currencyAccount = AccountForm.Value;
+                currencyAccountId = await _context.Account
+                    .Where(i => i.ACCOUNT_ID == currencyAccount)
+                    .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
+            }
             
-            int DefaultAccount = 1;
-            var DefaultAccountDetails = await _context.Account
+            var accountDetails = await _context.Account
                 .Include(i => i.CurrencyIdForeignKey)
-                .Include(i=>i.AccountTypeIdForeignKey)
+                .Include(i => i.AccountTypeIdForeignKey)
                 .Where(i => i.CUSTOMER_ID == userId)
-                .Where(i=>i.CurrencyIdForeignKey.COUNTRY_CURRENCY_ID == 1).FirstOrDefaultAsync(); //as gbp is always made first
-            
+                .Where(i => i.CurrencyIdForeignKey.COUNTRY_CURRENCY_ID == currencyAccountId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 1).FirstOrDefaultAsync();
             
             //default account stuff
-            ViewBag.ACCOUNT_ID = DefaultAccountDetails.ACCOUNT_ID;
-            ViewBag.COUNTRY_CURRENCY_NAME = DefaultAccountDetails.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME;
-            ViewBag.COUNTRY_CURRENCY_ID = DefaultAccountDetails.COUNTRY_CURRENCY_ID;
-            ViewBag.ACCOUNT_BALANCE = DefaultAccountDetails.ACCOUNT_BALANCE;
-            ViewBag.ACCOUNT_TYPE_ID = DefaultAccountDetails.ACCOUNT_TYPE_ID;
+            ViewBag.ACCOUNT_ID = accountDetails.ACCOUNT_ID;
+            ViewBag.COUNTRY_CURRENCY_NAME = accountDetails.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME;
+            ViewBag.COUNTRY_CURRENCY_ID = accountDetails.COUNTRY_CURRENCY_ID;
+            ViewBag.ACCOUNT_BALANCE = accountDetails.ACCOUNT_BALANCE;
+            ViewBag.ACCOUNT_TYPE_ID = accountDetails.ACCOUNT_TYPE_ID;
+            ViewBag.CUSTOMER_ID = userId;
             
             var customerName = await _context.Customer
                 .Where(i => i.CUSTOMER_ID == userId)
@@ -294,42 +313,19 @@ namespace Samolut_Fintech_Application.Controllers
                 .Where(i => i.CUSTOMER_ID == userId)
                 .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
             
-            var defaultSelectedTransactions = await _context.Transaction
-                .Include(i =>
-                    i.SenderAccountIdForeignKey) //include the foreign keys so i know the details of each accoujnt
-                .Include(i => i.ReceiverAccountIdForeignKey)
-                .Where(i => i.SENDER_ACCOUNT_ID == 1 || i.RECEIVER_ACCOUNT_ID == 1)
+            var selectedTransactions = await _context.Transaction
+                .Include(i => i.SenderAccountIdForeignKey.CustomerIdForeignKey) //include the foreign keys so i know the details of each accoujnt
+                .Include(i => i.ReceiverAccountIdForeignKey.CustomerIdForeignKey)
+                .Include(i => i.ReceiverAccountIdForeignKey.CurrencyIdForeignKey)
+                .Include(i => i.SenderAccountIdForeignKey.CurrencyIdForeignKey)
+                .Where(i => i.SENDER_ACCOUNT_ID == accountDetails.ACCOUNT_ID || i.RECEIVER_ACCOUNT_ID == accountDetails.ACCOUNT_ID)
                 .Where(i=>i.SenderAccountIdForeignKey.CUSTOMER_ID == userId || i.ReceiverAccountIdForeignKey.CUSTOMER_ID == userId).ToListAsync();
                 //the || means or
-
-            ViewBag.defaultSelectedTransactions = defaultSelectedTransactions;
+            
+            //get all customers
+            ViewBag.SelectedTransactions = selectedTransactions;
 
             return View(accounts);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApplicationHome(Account data)
-        {
-            if (HttpContext.Session.GetInt32("UserId") == null)
-            {
-            return RedirectToAction("Login", "Account");
-            }
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            
-            //check if accounts suspended or banned on every page
-            var suspended = await _context.Customer
-                .Where(i => i.CUSTOMER_ID == userId)
-                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
-            if (suspended == 1)
-            {
-                return RedirectToAction("Suspension", "Application");
-            } else if (suspended == 2)
-            {
-                return RedirectToAction("BannedAccount", "Application");
-            }
-
-            return View();
         }
         
         
@@ -520,8 +516,146 @@ namespace Samolut_Fintech_Application.Controllers
                 .Include(i => i.CurrencyIdForeignKey)
                 .Where(i => i.CUSTOMER_ID == userId)
                 .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
-            ViewBag.ErrorMessage = "Model Invalid";
+            ViewBag.ErrorMessage = "Please fix form errors.";
             return View("TransferInternalCurrency", data); //becuase my post is named differently to the file i have to tell it where to go back to
+        }
+        
+        //same function but for external
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CalculateExternalCurrency(ExternalTransferModel data)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } 
+            
+            
+            
+
+            if (ModelState.IsValid)
+            {
+                //validation check before calculation, will do same in next post
+                //so im gonna check if the accounts were the same first
+                if (data.SENDER_ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID)
+                {
+                    ViewBag.accounts = await _context.Account
+                        .Include(i => i.CurrencyIdForeignKey)
+                        .Where(i => i.CUSTOMER_ID == userId)
+                        .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                    ViewBag.ErrorMessage = "Cannot send money to the same account! Choose a different account to receive funds.";
+                    return View("TransferToExternal", data);
+                }
+                
+                //check if they have enough money by comparing to balance
+                var SenderBalance = await _context.Account
+                    .Where(i => i.ACCOUNT_ID == data.SENDER_ACCOUNT_ID)
+                    .Select(i => i.ACCOUNT_BALANCE).FirstOrDefaultAsync();
+
+
+                if (SenderBalance < data.AMOUNT) //so not enough moneys
+                {
+                    ViewBag.accounts = await _context.Account
+                        .Include(i => i.CurrencyIdForeignKey)
+                        .Where(i => i.CUSTOMER_ID == userId)
+                        .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                    ViewBag.ErrorMessage = "Insufficient Funds!";
+                    ViewBag.recipientsAccounts = await _context.Account
+                        .Include(i => i.CurrencyIdForeignKey)
+                        .Where(i => i.CUSTOMER_ID == data.CUSTOMER_ID).ToListAsync();
+
+                    var customer = await _context.Customer
+                        .Where(i => i.CUSTOMER_ID == data.CUSTOMER_ID).FirstOrDefaultAsync();
+                    ViewBag.externalName = customer.FIRST_NAME + " " + customer.LAST_NAME;
+                    return View("TransferToExternal", data);
+                }
+                
+                //calculate exchange rate, so get sender and receiver and calculate it against the uks one
+                //ill store all the rates to gbp
+                // formula is sender gbp rate / receiver gbp rate
+                var SenderCurrencyID = await _context.Account
+                    .Include(i => i.CurrencyIdForeignKey)
+                    .Where(i => i.ACCOUNT_ID == data.SENDER_ACCOUNT_ID)
+                    .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
+                
+                var ReciverCurrencyID= await _context.Account
+                    .Include(i => i.CurrencyIdForeignKey)
+                    .Where(i => i.ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID)
+                    .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
+
+                double SenderGBPRate = 0;
+                double ReceiverGBPRate = 0;
+                //though id use switch as its less code for this
+                switch(SenderCurrencyID)
+                {
+                    case 1: //gbp so no convert needed
+                        SenderGBPRate = 1;
+                        break;
+                    case 2: //eur to gbp
+                        SenderGBPRate = 0.8624;
+                        break;
+                    case 3:
+                        SenderGBPRate = 0.0046;
+                        break;
+                }
+
+                switch (ReciverCurrencyID)
+                {
+                    case 1: //gbp so no convert needed
+                        ReceiverGBPRate = 1;
+                        break;
+                    case 2: //eur to gbp
+                        ReceiverGBPRate = 0.8624;
+                        break;
+                    case 3:
+                        ReceiverGBPRate = 0.0046;
+                        break;
+                }
+
+                double ExchangeRate = SenderGBPRate / ReceiverGBPRate;
+                
+                double NewCurrencyAmount = Math.Round(((double)data.AMOUNT * ExchangeRate), 2);
+                
+                return RedirectToAction("ConfirmExternalTransfer", new
+                {
+                    senderID = data.SENDER_ACCOUNT_ID,
+                    receiverID = data.RECEIVER_ACCOUNT_ID,
+                    beforeAmount = data.AMOUNT,
+                    currencyAmount = NewCurrencyAmount,
+                    exchangeRate = ExchangeRate,
+                    startcurrencyID = SenderCurrencyID,
+                    endcurrencyID = ReciverCurrencyID,
+                    customerID = data.CUSTOMER_ID,
+                    SenderGBPRate = SenderGBPRate
+                });
+                
+            }
+
+            //if not need to relaoad page with eveythign it had before, i use this code below allot abovewhenever invalid data
+            ViewBag.accounts = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+            ViewBag.recipientsAccounts = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.CUSTOMER_ID == data.CUSTOMER_ID).ToListAsync();
+
+            var customerr = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == data.CUSTOMER_ID).FirstOrDefaultAsync();
+            ViewBag.externalName = customerr.FIRST_NAME + " " + customerr.LAST_NAME;
+            ViewBag.ErrorMessage = "Please fix form errors.";
+            return View("TransferToExternal", data); //becuase my post is named differently to the file i have to tell it where to go back to
         }
         
         
@@ -720,8 +854,6 @@ namespace Samolut_Fintech_Application.Controllers
                 ViewBag.accounts = await _context.Account
                     .Include(i => i.CurrencyIdForeignKey)
                     .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
-
-                ViewBag.ErrorMessage = "Success!";
                 
                 //as suspended van make withgdrawals, after the witdrawal transaction suspended must go back to banned page
                 if (suspended == 2)
@@ -729,7 +861,10 @@ namespace Samolut_Fintech_Application.Controllers
                     return RedirectToAction("BannedAccount", "Application");
                 } 
                 
-                return View(data);
+                return RedirectToAction("SuccessfullTransfer", new
+                {
+                    transactionID = TransactionData.TRANSACTION_ID
+                });
             }
 
             //if not need to relaoad page with eveythign it had before, i use this code below allot abovewhenever invalid data
@@ -744,6 +879,271 @@ namespace Samolut_Fintech_Application.Controllers
             return View(data);
             
         }
+        
+        
+        //for external transfers, basically the same as internal
+        public async Task<IActionResult> ConfirmExternalTransfer(double beforeAmount, int senderID, int receiverID, double exchangeRate, double currencyAmount, int startcurrencyID, int endcurrencyID, int customerID, double SenderGBPRate)        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+                
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } 
+            
+            
+            
+            
+            
+            var data = new ExternalTransferModel           
+            {
+                ORIGINAL_AMOUNT = beforeAmount,
+                SENDER_ACCOUNT_ID = senderID,
+                RECEIVER_ACCOUNT_ID = receiverID,
+                AMOUNT = currencyAmount,
+                EXCHANGE_RATE = exchangeRate,
+                START_CURRENCY = startcurrencyID,
+                END_CURRENCY = endcurrencyID,
+                CUSTOMER_ID = customerID  ,
+                SENDER_GBP_EXCHANGE_RATE = SenderGBPRate
+            };
+            
+            
+            //just things to make page look good, like getting the pound signs from db
+            ViewBag.SenderAccountSymbol = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.ACCOUNT_ID == senderID)
+                .Select(i => i.CurrencyIdForeignKey.CURRENCY_ICON).FirstOrDefaultAsync();
+            ViewBag.ReceiverAccountSymbol = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.ACCOUNT_ID == receiverID)
+                .Select(i => i.CurrencyIdForeignKey.CURRENCY_ICON).FirstOrDefaultAsync();
+            //and the names aswell cause why not
+            ViewBag.SenderAccountName = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.ACCOUNT_ID == senderID)
+                .Select(i => i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME).FirstOrDefaultAsync();
+            ViewBag.ReceiverAccountName = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.ACCOUNT_ID == receiverID)
+                .Select(i => i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME).FirstOrDefaultAsync();
+            
+            return View(data);
+        }
+        
+        //post to finally go through with transaction from the confirm of the thing above
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmExternalTransfer(ExternalTransferModel data)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+                
+            }
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            } 
+            
+            
+            
+            //same validation as above for initial calculation
+            if (ModelState.IsValid)
+            {
+                //validation check before calculation, will do same in next post
+                //so im gonna check if the accounts were the same first
+                if (data.SENDER_ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID)
+                {
+                    ViewBag.accounts = await _context.Account
+                        .Include(i => i.CurrencyIdForeignKey)
+                        .Where(i => i.CUSTOMER_ID == userId)
+                        .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                    ViewBag.recipientsAccounts = await _context.Account.Include(i => i.CurrencyIdForeignKey).Where(i => i.CUSTOMER_ID == data.CUSTOMER_ID).ToListAsync();
+                    var customer = await _context.Customer.Where(i => i.CUSTOMER_ID == data.CUSTOMER_ID).FirstOrDefaultAsync();
+                    ViewBag.externalName = customer.FIRST_NAME + " " + customer.LAST_NAME;
+                    ViewBag.ErrorMessage = "Cannot send money to the same account! Choose a different account to receive funds.";
+                    return View("TransferToExternal", data);
+                }
+                
+                //check if they have enough money by comparing to balance
+                var SenderBalance = await _context.Account
+                    .Where(i => i.ACCOUNT_ID == data.SENDER_ACCOUNT_ID)
+                    .Select(i => i.ACCOUNT_BALANCE).FirstOrDefaultAsync();
+
+                if (SenderBalance < data.ORIGINAL_AMOUNT.Value) //so not enough moneys
+                {
+                    ViewBag.accounts = await _context.Account
+                        .Include(i => i.CurrencyIdForeignKey)
+                        .Where(i => i.CUSTOMER_ID == userId)
+                        .Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                    ViewBag.bankAccounts = await _context.Account
+                        .Include(i => i.CurrencyIdForeignKey)
+                        .Where(i => i.CUSTOMER_ID == userId)
+                        .Where(i=>i.ACCOUNT_TYPE_ID == 2).ToListAsync();
+                    ViewBag.recipientsAccounts = await _context.Account.Include(i => i.CurrencyIdForeignKey).Where(i => i.CUSTOMER_ID == data.CUSTOMER_ID).ToListAsync();
+                    var customer = await _context.Customer.Where(i => i.CUSTOMER_ID == data.CUSTOMER_ID).FirstOrDefaultAsync();
+                    ViewBag.externalName = customer.FIRST_NAME + " " + customer.LAST_NAME;
+                    ViewBag.ErrorMessage = "Insufficient Funds!"+SenderBalance;
+                    return View("TransferToExternal", data);
+                }
+                
+                var SenderCurrencyID = await _context.Account
+                    .Include(i => i.CurrencyIdForeignKey)
+                    .Where(i => i.ACCOUNT_ID == data.SENDER_ACCOUNT_ID)
+                    .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
+                
+                var ReciverCurrencyID= await _context.Account
+                    .Include(i => i.CurrencyIdForeignKey)
+                    .Where(i => i.ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID)
+                    .Select(i => i.COUNTRY_CURRENCY_ID).FirstOrDefaultAsync();
+                
+                
+                //check suspicion before going ahead
+                
+                //for the suspicion validation
+                
+                var GBPAmount = data.ORIGINAL_AMOUNT.Value* data.SENDER_GBP_EXCHANGE_RATE.Value;
+                var Customer = await _context.Customer
+                    .Where(i => i.CUSTOMER_ID == userId)
+                    .Select(i=>i.CUSTOMER_ID).FirstOrDefaultAsync();
+                var ReceiversCustomer = await _context.Account
+                    .Where(i => i.ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID)
+                    .Select(i => i.CUSTOMER_ID).FirstOrDefaultAsync();
+                //so if its external then for suspicous check otherwise just go with transaction
+                if (Customer != ReceiversCustomer)
+                {
+                    if (GBPAmount > 10000)// so suspicous if a single transaction is above 10000
+                    {   
+                        var suspicusCustomer = await _context.Customer
+                            .Where(i => i.CUSTOMER_ID == userId).FirstOrDefaultAsync();
+                        suspicusCustomer.SUSPENDED = 1;
+                        _context.Customer.Update(suspicusCustomer);
+                        
+                        var suspendedData = new SuspiciousTransaction
+                        {
+                            SENDER_ACCOUNT_ID = data.SENDER_ACCOUNT_ID,
+                            RECEIVER_ACCOUNT_ID = data.RECEIVER_ACCOUNT_ID,
+                            AMOUNT = data.AMOUNT,
+                            EXCHANGE_RATE = data.EXCHANGE_RATE.Value,
+                            START_CURRENCY = SenderCurrencyID,
+                            END_CURRENCY = ReciverCurrencyID,
+                            ORIGINAL_AMOUNT = data.ORIGINAL_AMOUNT.Value,
+                            TRANSACTION_TIME = DateTime.Now,
+                            
+                        };
+                        _context.SuspiciousTransaction.Add(suspendedData);
+                        await _context.SaveChangesAsync();
+                        
+                        return RedirectToAction("Suspension", "Application");
+                            
+                    } 
+                }
+                
+                
+                
+                //changing accounts balance then addin a trnsaction to table
+                
+                var SenderAccount = await _context.Account.Where(i=>i.ACCOUNT_ID == data.SENDER_ACCOUNT_ID).FirstOrDefaultAsync();
+                var ReceiverAccount = await _context.Account.Where(i=>i.ACCOUNT_ID == data.RECEIVER_ACCOUNT_ID).FirstOrDefaultAsync();
+                SenderAccount.ACCOUNT_BALANCE -= data.ORIGINAL_AMOUNT.Value; //so take away gbp and then below add jpy cause i accidentally subtracted thiusands from gbp
+                ReceiverAccount.ACCOUNT_BALANCE += data.AMOUNT;
+                //so transaction
+                var TransactionData = new Transaction
+                {
+                    SENDER_ACCOUNT_ID = data.SENDER_ACCOUNT_ID,
+                    RECEIVER_ACCOUNT_ID = data.RECEIVER_ACCOUNT_ID,
+                    AMOUNT = data.AMOUNT,
+                    EXCHANGE_RATE = data.EXCHANGE_RATE.Value,
+                    START_CURRENCY = SenderCurrencyID,
+                    END_CURRENCY = ReciverCurrencyID,
+                    TRANSACTION_TIME = DateTime.Now,
+                };
+                
+                _context.Transaction.Add(TransactionData);
+                await _context.SaveChangesAsync();
+                
+                
+                ViewBag.accounts = await _context.Account
+                    .Include(i => i.CurrencyIdForeignKey)
+                    .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+                
+                //as suspended van make withgdrawals, after the witdrawal transaction suspended must go back to banned page
+                if (suspended == 2)
+                {
+                    return RedirectToAction("BannedAccount", "Application");
+                } 
+                
+                return RedirectToAction("SuccessfullTransfer", new
+                {
+                    transactionID = TransactionData.TRANSACTION_ID
+                });
+            }
+
+            //if not need to relaoad page with eveythign it had before, i use this code below allot abovewhenever invalid data
+            ViewBag.accounts = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.CUSTOMER_ID == userId || i.ACCOUNT_TYPE_ID == 1).ToListAsync();
+            ViewBag.bankAccounts = await _context.Account
+                .Include(i => i.CurrencyIdForeignKey)
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Where(i=>i.ACCOUNT_TYPE_ID == 2).ToListAsync();
+            ViewBag.ErrorMessage = "Model Invalid";
+            return View(data);
+            
+        }
+
+        public async Task<IActionResult> SuccessfullTransfer(int transactionID)
+        {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            
+            //check if accounts suspended or banned on every page
+            var suspended = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == userId)
+                .Select(i=>i.SUSPENDED).FirstOrDefaultAsync();
+            if (suspended == 1)
+            {
+                return RedirectToAction("Suspension", "Application");
+            }
+
+            var transaction = await _context.Transaction
+                .Where(i => i.TRANSACTION_ID == transactionID).FirstOrDefaultAsync();
+            
+            var senderName = await _context.Account
+                .Where(i => i.ACCOUNT_ID == transaction.SENDER_ACCOUNT_ID)
+                .Select(i => i.ACCOUNT_NAME).FirstOrDefaultAsync();
+
+            var receiverName = await _context.Account
+                .Where(i => i.ACCOUNT_ID == transaction.RECEIVER_ACCOUNT_ID)
+                .Select(i => i.ACCOUNT_NAME).FirstOrDefaultAsync();
+            
+            ViewBag.AMOUNT = transaction.AMOUNT;
+            ViewBag.SENDER_ACCOUNT_NAME = senderName;
+            ViewBag.RECEIVER_ACCOUNT_NAME = receiverName;
+            ViewBag.EXCHANGE_RATE = transaction.EXCHANGE_RATE;
+            return View();
+        }
+        
+        
         
         
         
@@ -946,7 +1346,11 @@ namespace Samolut_Fintech_Application.Controllers
                 //.Where(i=>i.ACCOUNT_TYPE_ID == 1).ToListAsync(); //was only currency accounts but the project brief says it should be both
             
             ViewBag.recipientsAccounts =  recipientsAccounts;
-            ViewBag.externalName = data.FULL_NAME;
+            var customer = await _context.Customer
+                .Where(i => i.CUSTOMER_ID == externalAccountId).FirstOrDefaultAsync();
+            var fname = customer.FIRST_NAME;
+            var lname = customer.LAST_NAME;
+            ViewBag.externalName = fname + lname;
                 
             return View(data);
                 

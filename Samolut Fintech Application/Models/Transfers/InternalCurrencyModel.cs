@@ -10,11 +10,12 @@ namespace Samolut_Fintech_Application.Models.Transfers
         //used this site to find all the attributes for validation https://learn.microsoft.com/en-us/aspnet/core/mvc/models/validation?view=aspnetcore-10.0
         [Key]
         public int? TRANSACTION_ID { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Please select an account.")]
         public int SENDER_ACCOUNT_ID { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Please select an account.")]
         public int RECEIVER_ACCOUNT_ID { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Please input an amount.")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be between 0.01 and your available balance.")]
         public double AMOUNT { get; set; }
         
         //added this so i can check if they have enough funds

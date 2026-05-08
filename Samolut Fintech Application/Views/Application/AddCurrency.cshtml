@@ -18,30 +18,30 @@
 
 <div class="mainAppSpace">
     <div class="applicationBox">
-        <div class="paymentTypeButtons">
-            <a asp-action="AddCurrency">Add Currency Account</a>
-            <a asp-action="ConnectBank">Connect Bank Account</a>
-        </div>
-            
         <div class="TransferBox">
-            <form asp-action="AddCurrency" method="post">
-                @Html.AntiForgeryToken()
+            <div class="placeConfirmBox">
+                <div class="confirmInfoBox">
+                    <form id="AddcurrencyForm" asp-action="AddCurrency" method="post">
+                        @Html.AntiForgeryToken()
 
-               
-                <label for="CURRENCY_ACCOUNT_ID">Choose a Currency Account to Add</label><br/>
-                @*display the bank accounts they can have*@
-                <select asp-for="CURRENCY_ACCOUNT_ID" id="CURRENCY_ACCOUNT_ID" name="CURRENCY_ACCOUNT_ID" required>
-                    <option>Select Currency to Add</option>
-                    @{
-                        foreach(var i in ViewBag.currencyAccounts) @*so recipients instead of just accounts*@
-                        {
-                            <option value="@i.CURRENCY_ACCOUNT_ID">@i.ACCOUNT_NAME - @i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME</option>
-                        }
-                    }
-                </select>
-                <span asp-validation-for="CURRENCY_ACCOUNT_ID" class="errorMessages"></span><br />
-                <button type="submit">Confirm and Connect Bank</button>
-            </form>
+
+                        <label class="confirmText" for="CURRENCY_ACCOUNT_ID">Choose a Currency Account to Add</label><br/>
+                        @*display the bank accounts they can have*@
+                        <select class="accountsTransactionSelect" asp-for="CURRENCY_ACCOUNT_ID" id="CURRENCY_ACCOUNT_ID" name="CURRENCY_ACCOUNT_ID" required>
+                            <option value="">Select Currency to Add</option>
+                            @{
+                                foreach (var i in ViewBag.currencyAccounts) @*so recipients instead of just accounts*@
+                                {
+                                    <option value="@i.CURRENCY_ACCOUNT_ID">@i.ACCOUNT_NAME - @i.CurrencyIdForeignKey.COUNTRY_CURRENCY_NAME</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="CURRENCY_ACCOUNT_ID" class="errorMessages"></span><br/>
+                        <button  class="transactionCalculateButton" type="submit">Confirm and Connect Bank</button>
+                    </form>
+                </div>
+            </div>
+            
         </div>
     </div>
 </div>

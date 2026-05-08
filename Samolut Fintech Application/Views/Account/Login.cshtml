@@ -15,7 +15,7 @@
                 <span asp-validation-for="PHONE_NUMBER" class="errorMessages"></span><br /> @* this is how i add the messages so i need to add to my models to make them more specific *@
                 <input type="password" asp-for="PASSWORD" placeholder="Enter your password" required><br />
                 <span asp-validation-for="PASSWORD" class="errorMessages"></span><br />
-                <button type="submit" class="Submit">Submit</button><br />
+                <button class="transactionCalculateButton" type="submit" class="Submit">Submit</button><br />
                 @{
                     if (ViewBag.ErrorMessage != null)
                     {

@@ -22,52 +22,57 @@
             @* learnt tht these are razor comments and they can be used anywhere and dont show on inspect element*@
             
                 <div class="TransferBox">
-                    <form asp-action="CalculateCurrency" method="post">
+                    <form asp-action="CalculateExternalCurrency" method="post">
                         @Html.AntiForgeryToken()
-
-                        @*Recipients currency accounts drop down*@
-                        <p>You can send money to there currency accounts or directly to there bank accounts.</p>
-                        <label for="RECEIVER_ACCOUNT_ID">Choose which of @ViewBag.externalName's currency accounts to send money to.</label><br/>
-                        @*display the currency accounts the same way i have in the home page*@
-                        <select asp-for="RECEIVER_ACCOUNT_ID" id="RECEIVER_ACCOUNT_ID" name="RECEIVER_ACCOUNT_ID" required>
-                            <option>Select Recipients Currency Account to Transfer To: </option>
-                            @{
-                                foreach (var i in ViewBag.recipientsAccounts) @*so recipients instead of just accounts*@
-                                {
-                                    <option value="@i.ACCOUNT_ID">@i.ACCOUNT_NAME</option>
+                        
+                        <div class="leftTransferBox">
+                            @*Recipients currency accounts drop down*@
+                            <label class="transactionText" for="RECEIVER_ACCOUNT_ID">Choose which of @ViewBag.externalName's currency accounts to send money to.</label><br/>
+                            <p class="transactionText" id="externalMessage">You can send money to there currency accounts or directly to there bank accounts.</p>
+                            @*display the currency accounts the same way i have in the home page*@
+                            <select class="accountsTransactionSelect" asp-for="RECEIVER_ACCOUNT_ID" id="RECEIVER_ACCOUNT_ID" name="RECEIVER_ACCOUNT_ID" required>
+                                <option value="">Select Recipients Account: </option>
+                                @{
+                                    foreach (var i in ViewBag.recipientsAccounts) @*so recipients instead of just accounts*@
+                                    {
+                                        <option value="@i.ACCOUNT_ID">@i.ACCOUNT_NAME</option>
+                                    }
                                 }
-                            }
-
-                        </select>
-                        <span asp-validation-for="RECEIVER_ACCOUNT_ID" class="errorMessages"></span><br />
+                            </select>
+                            
+                            <span asp-validation-for="RECEIVER_ACCOUNT_ID" class="errorMessages"></span><br />
+                            
+                        </div>
                         
-                        
-                        
-                        
-                        @*for personal accounts*@
-                        <label for="AMOUNT">Amount to Send to @ViewBag.externalName</label>
-                        <input asp-for="AMOUNT" name="AMOUNT" type="number" step="0.01" placeholder="0.00" required/>
-                        <span asp-validation-for="AMOUNT" class="errorMessages"></span><br />
-                        
-                        @*sending account, ill have to ask them to submit a number then ill che*@
-                        <label for="SENDER_ACCOUNT_ID">Account to Send Money</label>
-                        <select asp-for="SENDER_ACCOUNT_ID" id="SENDER_ACCOUNT_ID" name="SENDER_ACCOUNT_ID" required>
-                            <option>Select Your Currency Account to Transfer From: </option>
-                            @{
-                                foreach (var i in ViewBag.accounts)
-                                {
-                                    <option value="@i.ACCOUNT_ID">@i.ACCOUNT_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
+                        <div class="rightTransferBox">
+                            
+                            @*for personal accounts*@
+                            <label class="transactionText" for="AMOUNT">Amount to Send to @ViewBag.externalName</label>
+                            <input class="accountsTransactionAmount" asp-for="AMOUNT" name="AMOUNT" type="number" step="0.01" required/> @*to go up in 2dp*@
+                            <span asp-validation-for="AMOUNT" class="errorMessages"></span><br />
+                            
+                            @*sending account, ill have to ask them to submit a number then ill che*@
+                            <label class="transactionText" for="SENDER_ACCOUNT_ID">Account to Send Money</label>
+                            <select class="accountsTransactionSelect" asp-for="SENDER_ACCOUNT_ID" id="SENDER_ACCOUNT_ID" name="SENDER_ACCOUNT_ID" required>
+                                <option value="">Select Your Currency Account:</option>
+                                @{
+                                    foreach (var i in ViewBag.accounts)
+                                    {
+                                        <option value="@i.ACCOUNT_ID">@i.ACCOUNT_NAME - @i.CurrencyIdForeignKey.CURRENCY_ICON@i.ACCOUNT_BALANCE</option>
+                                    }
                                 }
-                            }
 
-                        </select>
-                        <span asp-validation-for="SENDER_ACCOUNT_ID" class="errorMessages"></span><br />
+                            </select>
+                            <span asp-validation-for="SENDER_ACCOUNT_ID" class="errorMessages"></span><br />
+                            
+                            @*Wanted the users to calculate and see the exchange rate before they sent the money*@
+                            <label class="transactionText" for="calculateButton">Calculate Exchange Rate</label>
+                            <button name="calculateButton" class="transactionCalculateButton" type="submit">Calculate</button><br/>
+                            <span class="errorMessages">@ViewBag.ErrorMessage</span>
+                            <input type="hidden" asp-for="CUSTOMER_ID" />
+                        </div>
                         
-                        @*Wanted the users to calculate and see the exchange rate before they sent the money*@
-                        <label for="calculateButton">Calculate Exchange Rate</label>
-                        <button name="calculateButton" class="SendMoneySubmit" type="submit">Calculate</button><br/>
-                        <span class="errorMessages">@ViewBag.ErrorMessage</span>
-                    </form>
+                        </form>
                 </div>
             
                 

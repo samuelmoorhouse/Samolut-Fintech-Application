@@ -1,32 +1,36 @@
 @model Samolut_Fintech_Application.Models.Transfers.suspendedReasonModel
 <body>
-    
-<div class="loginSpace">
-    <div class="phoneLogin">
-        <p class="welcomeText">Account temporarily under review due to a suspicious transaction. This has been sent to administrators for review already.</p>
-        <p>Transaction that caused review:
-            Amount Sent: @ViewBag.Amount @ViewBag.endCurrency
-            Sent to: @ViewBag.sentTo
-            Time: @ViewBag.Time
-            
-            </p> 
-        <p class="welocomeText2">Add a reason for the transaction under review below. (This reason can be changed up until the timke the admin reviews)</p>
-        <form asp-action="Suspension" method="post">
-            @Html.AntiForgeryToken() 
-            
-            <input type="text" asp-for="SUSPENDED_TRANSACTION_REASON" placeholder="Enter reason for the transaction." required><br/>
-            <span asp-validation-for="SUSPENDED_TRANSACTION_REASON" class="errorMessages"></span><br /> @* this is how i add the messages so i need to add to my models to make them more specific *@
-            <button type="submit" class="Submit">Submit</button><br />
-            <span class="errorMessages">@ViewBag.ErrorMessage</span><br />
-        </form>
-        
-        @if (@ViewBag.Reason != null)
-        {
-            <p class="welocomeText2">Reason Currently Submitted:  @ViewBag.Reason</p>
-        }
-        
+    <div class="topDisplay">
+        <h2></h2>
     </div>
-</div>
+    <div class="applicationBox">
+        @* learnt tht these are razor comments and they can be used anywhere and dont show on inspect element*@
+        <div class="TransferBox">
+            <div class="placeConfirmBox">
+                <div class="confirmInfoBox">
+                    <p class="confirmText">Account temporarily under review due to a suspicious transaction. This has been sent to administrators for review already.</p>
+                    <p class="confirmText" style="color: #dd6a6a;">Transaction that caused review: Amount Sent: @ViewBag.Amount Sent to: @ViewBag.sentTo at Time: @ViewBag.Time</p>
+                    <p class="confirmText">Add a reason for the transaction under review below. (This reason can be changed up until the timke the admin reviews)</p>
+
+                    <form id="AddcurrencyForm" asp-action="Suspension" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <input class="accountsTransactionAmount" type="text" asp-for="SUSPENDED_TRANSACTION_REASON" placeholder="Enter reason for the transaction." required><br/>
+                        <span asp-validation-for="SUSPENDED_TRANSACTION_REASON" class="errorMessages"></span><br/> @* this is how i add the messages so i need to add to my models to make them more specific *@
+                        <button class="transactionCalculateButton" type="submit" class="Submit">Submit</button><br/>
+                        <span class="errorMessages">@ViewBag.ErrorMessage</span><br/>
+                    </form>
+
+                    @if (@ViewBag.Reason != null)
+                    {
+                        <p class="confirmText" style="color: lightgray;">Reason Currently Submitted: @ViewBag.Reason</p>
+                    }
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 @* for all my asp validation stuff to actually show up in the form*@
 
